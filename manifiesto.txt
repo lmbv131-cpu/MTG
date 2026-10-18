@@ -6,7 +6,7 @@ d228b28e430bdacd5367d04b562679bab4950543 33959 engine/res/blockdata/boosters-spe
 468d15db98217286b90bd0a3599967271da031d1 2340 engine/res/blockdata/fantasyblocks.txt
 1022c6d6386340bdf4e8e7b2d133df90a266f049 216249 engine/res/blockdata/printsheets.txt
 eb79407e14897dacb64a3d852b12884aa7f7f89d 1122 engine/res/blockdata/starters.txt
-22c7da1aa9079dd9e71ec2686235fead9fec62a1 18536054 engine/res/cardsfolder/cardsfolder.zip
+fb19cd1836c3f908fcbb4513d5feb5e15e31d026 18536054 engine/res/cardsfolder/cardsfolder.zip
 674722f67e3017d3fe7ff22471c70f0289da3d5f 75 engine/res/datos.txt
 728d8a5352549bda44d5434efa86d8579dadb89a 6904880 engine/res/deckgendecks/Commander.dat
 8e40d2790e7f172d032c6dea42f0f215ddf1901c 651 engine/res/defaults/editor.xml
@@ -3182,4 +3182,4 @@ c194b73e76090177bc57adf826c68996635d1873 111 engine/res/tokenscripts/wu_2_2_knig
 8e32acef8424174b3b2a10ed35b267481390f2a1 315 engine/res/tokenscripts/yellow_hat.txt
 5e6f12e1de81b14500de46e4410596e88485c9c3 512 engine/res/tokenscripts/zabu.txt
 70134148a29b5da1263c0a8a820b80926ce4011f 101 engine/res/tokenscripts/zeppelin.txt
-9730e8a875cacf0e55c845c6c3909750658328ed 25441814 motor.jar
+a1991a44195d7a07f9c35eb2012f26d987f3f877 25428678 motor.jar
