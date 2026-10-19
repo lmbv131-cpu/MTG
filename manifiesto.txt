@@ -7,7 +7,7 @@ d228b28e430bdacd5367d04b562679bab4950543 33959 engine/res/blockdata/boosters-spe
 1022c6d6386340bdf4e8e7b2d133df90a266f049 216249 engine/res/blockdata/printsheets.txt
 eb79407e14897dacb64a3d852b12884aa7f7f89d 1122 engine/res/blockdata/starters.txt
 61199a5f3be4b51677717e107f7baab21568b273 18536054 engine/res/cardsfolder/cardsfolder.zip
-f924953fbbd3c14cfa619d6e348a5808522542fa 75 engine/res/datos.txt
+ea60ca90ee0887c261a05700f6969699a9142ef0 75 engine/res/datos.txt
 728d8a5352549bda44d5434efa86d8579dadb89a 6904880 engine/res/deckgendecks/Commander.dat
 8e40d2790e7f172d032c6dea42f0f215ddf1901c 651 engine/res/defaults/editor.xml
 4b015291692f318d7a8f75449ad7daa40ba8e287 3275 engine/res/defaults/gauntlet/LOCKED_DotP Preconstructed.dat
