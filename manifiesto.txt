@@ -1,4 +1,4 @@
-dbc8ee789e21de50dfe5e18b546ab357bbe815cf 1104345 app.jar
+9ab6c660902b5a3707e27180e0213f294be45d48 1148002 app.jar
 0039e64c319032b20adb7f8f3380e1315c3954c7 20228 engine/res/ai/Default.ai
 977d7b40a160e3000b0fd25f22a4b7253186f32b 22509 engine/res/blockdata/blocks.txt
 d228b28e430bdacd5367d04b562679bab4950543 33959 engine/res/blockdata/boosters-special.txt
@@ -6,8 +6,8 @@ d228b28e430bdacd5367d04b562679bab4950543 33959 engine/res/blockdata/boosters-spe
 468d15db98217286b90bd0a3599967271da031d1 2340 engine/res/blockdata/fantasyblocks.txt
 1022c6d6386340bdf4e8e7b2d133df90a266f049 216249 engine/res/blockdata/printsheets.txt
 eb79407e14897dacb64a3d852b12884aa7f7f89d 1122 engine/res/blockdata/starters.txt
-e5d273649e713e34f450ce39af0cd09f19c08832 18549135 engine/res/cardsfolder/cardsfolder.zip
-9a46f0a43adaea3ab85b4317e5bd75df64526c60 75 engine/res/datos.txt
+29910e6bfbcd41ac269f17d25a8e09a66d8c131b 18547817 engine/res/cardsfolder/cardsfolder.zip
+4ce7caa9618102a94352da846f63b330395b5917 75 engine/res/datos.txt
 728d8a5352549bda44d5434efa86d8579dadb89a 6904880 engine/res/deckgendecks/Commander.dat
 8e40d2790e7f172d032c6dea42f0f215ddf1901c 651 engine/res/defaults/editor.xml
 4b015291692f318d7a8f75449ad7daa40ba8e287 3275 engine/res/defaults/gauntlet/LOCKED_DotP Preconstructed.dat
@@ -418,7 +418,7 @@ e0317acb63d7689ecd9fcb31ed56b967761bb07d 9491 engine/res/editions/Magic 2014.txt
 3a9c1133b4327dc0212fe829f39d1f587318620d 11037 engine/res/editions/Magic 2015.txt
 5c06de4ade41d4bbcba8b93403bd2c23ec657f22 3143 engine/res/editions/Magic Online Avatars.txt
 1b563a7d5896bf34fc2e444297571ea37e05152b 1603 engine/res/editions/Magic Online Deck Series.txt
-f2947c46991cc7eb6dd60988536919f11ffeba27 125059 engine/res/editions/Magic Online Promos.txt
+c8babfa741d727dc063ee46a52ca938fc8c107ba 125101 engine/res/editions/Magic Online Promos.txt
 2e363bcd2d9b3ba58c83d91e226bf4a627fc8aa0 5658 engine/res/editions/Magic Online Theme Decks.txt
 5555a7500c95df58464114275bf576ac879695ab 332 engine/res/editions/Magic Origins Clash Pack.txt
 b6166cc88c8970fc84e73d8d1a6f015116c196f0 467 engine/res/editions/Magic Origins Promos.txt
@@ -595,9 +595,9 @@ ab9e80b11e01acaab0d02ea9550f80925596adbe 413 engine/res/editions/Signature Spell
 4392f60691083fe9d10dd8e0359618919536ba75 390 engine/res/editions/Signature Spellbook Gideon.txt
 1d2e8eec87501ae8529f57d8a88f5a108b2efba9 379 engine/res/editions/Signature Spellbook Jace.txt
 45db37a5198e9b17d51e4430cd824c55f57cc9f2 6409 engine/res/editions/Special Guests.txt
-d677f77866119b45e53e1b6e86d54ab1f1ff57bc 598 engine/res/editions/Spotlight Series.txt
+cdefb0f4899f68c9a5b5e12ca43560ce6897d405 647 engine/res/editions/Spotlight Series.txt
 9b4a2d507a09ac4821c6cf2bfe5636dada83602a 2852 engine/res/editions/Star Trek Commander.txt
-c22fa65710cbba29fde98c5654a03b7da0f3ae93 12998 engine/res/editions/Star Trek.txt
+91705338c175893b3a8612114ac827abd579c832 14511 engine/res/editions/Star Trek.txt
 a685fb68a0ae0ff2494b4a752fc4c25df68e3cc8 546 engine/res/editions/Stardates.txt
 77df2aa3118f9301ed4b12985b7413ca00db46e9 5875 engine/res/editions/Starter 1999.txt
 4404b3bc05e5c690d4687fdc4ca0edd8b2dc42c3 790 engine/res/editions/Starter 2000.txt
@@ -3181,4 +3181,4 @@ c194b73e76090177bc57adf826c68996635d1873 111 engine/res/tokenscripts/wu_2_2_knig
 8e32acef8424174b3b2a10ed35b267481390f2a1 315 engine/res/tokenscripts/yellow_hat.txt
 5e6f12e1de81b14500de46e4410596e88485c9c3 512 engine/res/tokenscripts/zabu.txt
 70134148a29b5da1263c0a8a820b80926ce4011f 101 engine/res/tokenscripts/zeppelin.txt
-a735e056cad5641bbe8e8316c40e5cd2d1cfc6da 25653687 motor.jar
+95ccce7da5e285db9d3f72db075112dc2c1f4b72 25655842 motor.jar
