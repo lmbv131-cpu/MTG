@@ -1,4 +1,4 @@
-5e06c76b78664e18433ff2147b960699f155ed53 1154069 app.jar
+c755330bf0bc8951401f36d4c99d828538f35074 1155027 app.jar
 0039e64c319032b20adb7f8f3380e1315c3954c7 20228 engine/res/ai/Default.ai
 977d7b40a160e3000b0fd25f22a4b7253186f32b 22509 engine/res/blockdata/blocks.txt
 d228b28e430bdacd5367d04b562679bab4950543 33959 engine/res/blockdata/boosters-special.txt
@@ -6,8 +6,8 @@ d228b28e430bdacd5367d04b562679bab4950543 33959 engine/res/blockdata/boosters-spe
 468d15db98217286b90bd0a3599967271da031d1 2340 engine/res/blockdata/fantasyblocks.txt
 1022c6d6386340bdf4e8e7b2d133df90a266f049 216249 engine/res/blockdata/printsheets.txt
 eb79407e14897dacb64a3d852b12884aa7f7f89d 1122 engine/res/blockdata/starters.txt
-5c671e799f38398730018226b2ddaaaf437151b6 18556086 engine/res/cardsfolder/cardsfolder.zip
-e43cac9fdb8095b45ae9b23875867551e31cd145 75 engine/res/datos.txt
+8e38133c048e149fa3e0e8a59052eb4752c3f28c 18556086 engine/res/cardsfolder/cardsfolder.zip
+9bdf853a878c2b21c7994703b65851b9b36d5e3b 75 engine/res/datos.txt
 728d8a5352549bda44d5434efa86d8579dadb89a 6904880 engine/res/deckgendecks/Commander.dat
 8e40d2790e7f172d032c6dea42f0f215ddf1901c 651 engine/res/defaults/editor.xml
 4b015291692f318d7a8f75449ad7daa40ba8e287 3275 engine/res/defaults/gauntlet/LOCKED_DotP Preconstructed.dat
