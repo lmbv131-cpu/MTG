@@ -1,4 +1,4 @@
-1b94d58a85129cfb6206efba7d262785445db8d0 1174559 app.jar
+6c0bdb1679f32f325f2df13c108ca632e352bf06 1177538 app.jar
 0039e64c319032b20adb7f8f3380e1315c3954c7 20228 engine/res/ai/Default.ai
 977d7b40a160e3000b0fd25f22a4b7253186f32b 22509 engine/res/blockdata/blocks.txt
 d228b28e430bdacd5367d04b562679bab4950543 33959 engine/res/blockdata/boosters-special.txt
@@ -6,7 +6,7 @@ d228b28e430bdacd5367d04b562679bab4950543 33959 engine/res/blockdata/boosters-spe
 468d15db98217286b90bd0a3599967271da031d1 2340 engine/res/blockdata/fantasyblocks.txt
 1022c6d6386340bdf4e8e7b2d133df90a266f049 216249 engine/res/blockdata/printsheets.txt
 eb79407e14897dacb64a3d852b12884aa7f7f89d 1122 engine/res/blockdata/starters.txt
-f01bb21cd429296dbf3b734409e5a6f3811c89d9 18565871 engine/res/cardsfolder/cardsfolder.zip
+29a0956d40ffe9cb00e8f6f7d84aa8b54f1d2b21 18565871 engine/res/cardsfolder/cardsfolder.zip
 a7f2bbe26723c0d92e9e447ec6855b4cdc78aa3c 75 engine/res/datos.txt
 728d8a5352549bda44d5434efa86d8579dadb89a 6904880 engine/res/deckgendecks/Commander.dat
 8e40d2790e7f172d032c6dea42f0f215ddf1901c 651 engine/res/defaults/editor.xml

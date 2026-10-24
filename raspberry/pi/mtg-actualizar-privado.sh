@@ -30,6 +30,7 @@ estado=$(curl -fsS -m 5 "http://$IP:$PUERTO/partida-en-curso" 2>/dev/null || ech
 # --- catalog: code only (recordings, pictures and the hidden browsers' profiles are the Pi's own)
 if [ -d "$R/catalogo" ] && [ -d "$C" ]; then
   java_antes=$(cat "$C/servidor/CatalogoServer.java" "$C/servidor/Auto.java" 2>/dev/null | sha1sum)
+  escenas_antes=$(cat "$C"/grabacion/*.js 2>/dev/null | sha1sum)
   proxy_antes=$(sha1sum < "$C/servidor/sin_motor_proxy.py" 2>/dev/null || true)
   rsync -rlt --chown=mtg:mtg \
     --exclude 'grab/' --exclude 'img/' --exclude 'vid/' --exclude 'real/' --exclude 'servidor/navegador*' --exclude 'servidor/tmp/' \
@@ -47,6 +48,11 @@ if [ -d "$R/catalogo" ] && [ -d "$C" ]; then
     rm -rf "$t"
   fi
   [ "$proxy_antes" != "$(sha1sum < "$C/servidor/sin_motor_proxy.py")" ] && systemctl restart mtg-catalogo-puerta.service
+  # the hidden Simular game keeps the scene scripts it loaded when its board was made: start it again with the new ones
+  if [ "$escenas_antes" != "$(cat "$C"/grabacion/*.js 2>/dev/null | sha1sum)" ]; then
+    pkill -u mtg -f 'mtglocal\.jar .*--sim' || true
+    systemctl restart mtg-catalogo.service
+  fi
 fi
 
 # --- the Pi's own scripts and services

@@ -53,13 +53,22 @@ W.sala = async () => {
 };
 W.mesa = async () => { await scene({ p0battlefield: LAN + ';Darksteel Angel', p0hand: HAND, p1hand: 'Kodama\'s Reach;Mulldrifter;Counterspell', p0graveyard: 'Brainstorm' }); await imgsReady(); await wait(3000); await shot('mesa', 'mesa'); };
 W['mesa-pila'] = async () => {
-  // Pablo needs his own Islands to pay Counterspell (a scene's board gives each player only what it lists), and Luis an
-  // instant in hand so he keeps priority with both spells on the stack instead of passing by himself (Pi 2026-10-24: empty stack)
-  await scene({ p0battlefield: LAN + ';Darksteel Angel', p0hand: 'Lava Spike;Lightning Bolt', p1battlefield: 'Island;Island;Island', p1hand: 'Counterspell' });
-  await cast('Luis', 'Lava Spike', [{ picks: [{ player: 1 }] }]); await prioOf('Pablo');
-  const sid = (await st('Pablo')).state.stack[0].id; await cast('Pablo', 'Counterspell', [{ picks: [{ stack: sid }] }]);
-  await waitIn('Luis', (s) => s && s.state && s.state.stack && s.state.stack.length >= 2, 20000 * LENTO);
-  await shot('mesa', 'mesa-pila', () => document.querySelectorAll('#pila [data-stack]:not(.out)').length >= 2); await passAll();
+  // Same steps as W.pila (Luis keeps priority and casts two spells), which works on the Pi; then Pablo tries to answer with
+  // Counterspell, waiting for his own priority without making anyone pass (Pi 2026-10-24: only Lava Spike reached the stack).
+  // Luis keeps a Counterspell in hand and his «pasar solo» is off: with nothing left to do his seat passed by itself
+  // (Seat.autoPass) and the stack resolved before the photo.
+  await scene({ p0battlefield: LAN + ';Darksteel Angel', p0hand: 'Lava Spike;Shock;Counterspell', p1battlefield: 'Island;Island;Island', p1hand: 'Counterspell' });
+  await send('Luis', { type: 'autoPass', on: false }); await wait(300);
+  await cast('Luis', 'Lava Spike', [{ picks: [{ player: 1 }] }]); await prioOf('Luis');
+  await cast('Luis', 'Shock', [{ picks: [{ player: 2 }] }]);
+  const ok2 = await waitIn('Luis', (s) => s && s.state && s.state.stack && s.state.stack.length >= 2, 20000 * LENTO); await log('Luis', 'mesa-pila stack2 ' + ok2);
+  if (await waitIn('Pablo', (s) => canPass(s), 8000 * LENTO)) {
+    const sid = (await st('Pablo')).state.stack[0].id; await cast('Pablo', 'Counterspell', [{ picks: [{ stack: sid }] }]);
+    await waitIn('Luis', (s) => s && s.state && s.state.stack && s.state.stack.length >= 3, 10000 * LENTO);
+  }
+  await log('Luis', 'mesa-pila antes de la foto');
+  await shot('mesa', 'mesa-pila', () => document.querySelectorAll('#pila [data-stack]:not(.out)').length >= 2); await log('Luis', 'mesa-pila foto');
+  await send('Luis', { type: 'autoPass', on: true }); await passAll();
 };
 const toAttack = async (who) => { await send(who, { type: 'ok' }); await wait(1500); for (let i = 0; i < 20; i++) { const s = await st(who); if (/Attack/.test(s.input || '')) return true; for (const n of Object.keys(P)) { const x = await st(n); if (canPass(x) && n !== who) await send(n, { type: 'ok' }); } await wait(700); } return false; };
 const finishCombat = async () => { for (let i = 0; i < 40; i++) { const s = await st('Luis'); if (/MAIN2|END/.test(s.state.phaseKey || '')) return; for (const n of Object.keys(P)) { const x = await st(n); if (x && /InputAttack|InputBlock/.test(x.input || '')) await send(n, { type: 'ok' }); else if (canPass(x)) await send(n, { type: 'ok' }); } await wait(500); } };
