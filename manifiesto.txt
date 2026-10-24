@@ -1,4 +1,4 @@
-d4ba753bae4a47ef3577ff580bd5d6b7e650c164 1170083 app.jar
+11e77cd2517d9ec624b50ec4abdb661b9a8d5902 1170253 app.jar
 0039e64c319032b20adb7f8f3380e1315c3954c7 20228 engine/res/ai/Default.ai
 977d7b40a160e3000b0fd25f22a4b7253186f32b 22509 engine/res/blockdata/blocks.txt
 d228b28e430bdacd5367d04b562679bab4950543 33959 engine/res/blockdata/boosters-special.txt
@@ -6,8 +6,8 @@ d228b28e430bdacd5367d04b562679bab4950543 33959 engine/res/blockdata/boosters-spe
 468d15db98217286b90bd0a3599967271da031d1 2340 engine/res/blockdata/fantasyblocks.txt
 1022c6d6386340bdf4e8e7b2d133df90a266f049 216249 engine/res/blockdata/printsheets.txt
 eb79407e14897dacb64a3d852b12884aa7f7f89d 1122 engine/res/blockdata/starters.txt
-5fdfb3d9a3ecb2bc67d2f6be89eb2391828204e1 18556690 engine/res/cardsfolder/cardsfolder.zip
-4836ee116cca80cab9c2e3c90a430c3aaf12ae1c 75 engine/res/datos.txt
+310636cac6350568e6e6311ddb63b1be64e53484 18565606 engine/res/cardsfolder/cardsfolder.zip
+6c257b882213f85b86289be517e32c64e3e07cd4 75 engine/res/datos.txt
 728d8a5352549bda44d5434efa86d8579dadb89a 6904880 engine/res/deckgendecks/Commander.dat
 8e40d2790e7f172d032c6dea42f0f215ddf1901c 651 engine/res/defaults/editor.xml
 4b015291692f318d7a8f75449ad7daa40ba8e287 3275 engine/res/defaults/gauntlet/LOCKED_DotP Preconstructed.dat
@@ -2056,7 +2056,7 @@ d6249685685c18c8159583d9670d31f6443345cd 420 engine/res/formats/Sanctioned/Stand
 efeebec5cb535a787046c884ba58635025670c7b 179646 engine/res/languages/en-US.properties
 37d0a0c50c5cbf2b32aed5a194fb652476452f63 204472 engine/res/languages/es-ES.properties
 d28968af0ee1758485ac8764c1c9f556fd09d9c2 531 engine/res/lists/NonStackingKWList.txt
-7175d144f8d98e1b6e37c15909a3d1b3ddcfb0fa 7538 engine/res/lists/TypeLists.txt
+b57c5aa41f58a3d938818f442877fd8d6ce238e9 7555 engine/res/lists/TypeLists.txt
 4909f145e67540d20bdbb094de0c74131b411705 24153 engine/res/lists/achievement-images.txt
 09d89e1f8cd3c9fca91058d53ad75e3a99d7738c 4068 engine/res/lists/altwin-achievements.txt
 30cedf0327443c2b2dc20627bff3334f2953f5b3 4711 engine/res/lists/booster-images.txt
@@ -3094,6 +3094,7 @@ c0dc8d31ee7aa813c5a0e89bc4727d51ca6026ff 85 engine/res/tokenscripts/w_1_1_rabbit
 32c035987e7b4f91e267aa490df88015704dd706 106 engine/res/tokenscripts/w_1_1_soldier_lifelink.txt
 8f063879ddf3d197c617dbd634bc72f3c7f7e99b 85 engine/res/tokenscripts/w_1_1_spirit.txt
 c38f1517c0f985106272aa45c442d4dd89460621 100 engine/res/tokenscripts/w_1_1_spirit_flying.txt
+d0cd16b3b2784e50f1ca83a1f7a1457b41dfbd89 194 engine/res/tokenscripts/w_1_1_tribble_noblock.txt
 86562fd01563a7c68dab4bb051eea082e9de7abf 106 engine/res/tokenscripts/w_1_1_vampire_lifelink.txt
 d89636e004fd5d9ca2685ba75f9e76f7fa593991 87 engine/res/tokenscripts/w_1_1_warrior.txt
 dde5e86abfbd2920044bb19dbd9cf56deee2434d 108 engine/res/tokenscripts/w_1_1_warrior_vigilance.txt

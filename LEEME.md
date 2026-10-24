@@ -7,5 +7,6 @@ cambió, baja solo los archivos que cambiaron y luego las imágenes de las carta
 - `motor.jar`: el motor de reglas (GameEngine, GPL v3) y sus librerías.
 - `engine/res`: las reglas de las cartas, ediciones, fichas y mazos preconstruidos.
 - `manifiesto.txt`: sha1, tamaño y ruta de cada archivo.
+- `VERSION.txt`: el número de paquete del juego (pNNN).
 
 Esta carpeta la rellena INSTALAR.bat del juego, que también la sube.
