@@ -63,5 +63,7 @@ log "Aplicando $(g rev-parse --short "$remoto") (sin partida en curso)"
 g reset -q --hard "$remoto"
 construir
 systemctl restart mtglocal.service
+# the catalog's hidden Simular games keep the old jar until they stop: close them, the catalog starts them again when needed
+pkill -u mtg -f 'mtglocal\.jar .*--sim' || true
 rm -f "$E/pendiente"
 log "Listo: versión $(cat "$E/version"), servidor reiniciado"

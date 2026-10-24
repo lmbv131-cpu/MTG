@@ -357,7 +357,7 @@ function renderWindows() {
   document.getElementById('wrows').innerHTML = rows.map(([k, [n, d]]) => {
     const used = ACCIONES.filter((a) => a.ventanas.includes(k)).map((a) => a.accion);
     const img = CAPTURAS[k] ? `<img class="wimg" src="${CAPTURAS[k]}" alt="" loading="lazy">` : '<span class="no">✕</span>';
-    return `<tr class="row" data-open="w:${k}" tabindex="0"><td class="an">${esc(n)}</td><td class="que">${esc(nc(d))}</td>
+    return `<tr class="row" data-open="w:${k}" tabindex="0"><td><div class="an">${esc(n)}</div><span class="mom">momento: ven:${esc(k)}</span> <button class="ped-r" data-ped="w:${esc(k)}">Pedir cambio</button></td><td class="que">${esc(nc(d))}</td>
       <td class="aviso">${esc(used.join(', ') || '—')}</td><td>${img}${capVer(k) ? '<br>' + capVer(k).replace('class="vv', 'style="margin:0" class="vv') : ''}</td></tr>`;
   }).join('') || '<tr><td colspan="4" class="ej" style="padding:24px">Nada coincide con la búsqueda.</td></tr>';
 }
@@ -400,6 +400,7 @@ const PKS = {};
 function item(key) {
   const [t, id] = [key[0], key.slice(2)];
   if (t === 'a') { const a = ACCIONES.find((x) => x.id === id); return a && { key, title: a.accion, v: V[id], base: 'vid/', kw: false }; }
+  if (t === 'w') return VENTANAS[id] && { key, title: 'Ventana «' + VENTANAS[id][0] + '»', win: true };
   const v = KV[id]; return { key, title: (KWN[id] || [id])[0], v, base: 'vid/kw/', kw: true };
 }
 function vtitle(it, r) {
@@ -488,6 +489,8 @@ function openWin(key) {
   ui.sel = key; ui.stab = ui.stab || 'ven';
   document.getElementById('d-t').textContent = n;
   document.getElementById('d-sim').hidden = true; document.getElementById('d-pro').hidden = true;
+  const dm = document.getElementById('d-mom'), dp = document.getElementById('d-ped'); dm.hidden = dp.hidden = false; dm.textContent = 'momento: ven:' + k; dp.dataset.mom = key;
+  const pb = document.getElementById('pedido-box'); if (pb) pb.hidden = true;
   const cp = document.getElementById('d-cap'); cp.hidden = false; cp.dataset.k = k;
   const b = document.getElementById('d-b'); stopAll(b); b.classList.add('focus');
   b.innerHTML = `<div class="v f wv"><div class="vt">${esc(nc(d))}${capVer(k)}</div><div class="box">${CAPTURAS[k] ? `<img src="${CAPTURAS[k]}" alt="Captura de ${esc(n)}">` : '<div class="none"><b>✕</b>Todavía no hay captura</div>'}</div></div>`;
@@ -616,7 +619,7 @@ const PED_CAMPOS = [
   ['notocar', 'No tocar', 'Lo que ya te gusta y debe quedar igual.', 'p. ej. el número de daño flotante'],
 ];
 // momento: the action id, or kw:<keyword> for Palabras clave (the skill finds the keyword's scene and effects)
-function momento(key) { return !key ? null : key[0] === 'a' ? key.slice(2) : key[0] === 'k' ? 'kw:' + key.slice(2) : null; }
+function momento(key) { return !key ? null : key[0] === 'a' ? key.slice(2) : key[0] === 'k' ? 'kw:' + key.slice(2) : key[0] === 'w' ? 'ven:' + key.slice(2) : null; }
 function pedidoTexto(key, n) {
   const it = item(key), box = document.getElementById('pedido-box'), v = (id) => box.querySelector('#pd-' + id).value.trim().replace(/\s*\n\s*/g, ' ');
   const donde = [...box.querySelectorAll('[name=pd-donde]:checked')].map((x) => x.value).join(', ');
