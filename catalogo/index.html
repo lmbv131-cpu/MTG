@@ -1,0 +1,834 @@
+<meta charset="utf-8">
+<title>Acciones de la partida</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<script>/* under the game's /catalogo (Pi, Luis 2026-10-24): relative files need the trailing slash */ if (location.pathname === '/catalogo') location.replace('/catalogo/' + location.search + location.hash);</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Spectral:wght@500;600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400&display=swap">
+<style>
+/* Three working tables (actions, windows, keywords). A row opens its 4 videos; Simular plays the 4 screens together, full screen. Same night-table palette as the app. */
+:root {
+  --bg: #10141B; --panel: #171D27; --panel2: #1D2431; --line: #283244;
+  --fg: #E9E3D5; --muted: #929BAB; --gold: #F0CF8E; --gold-dim: #8C7646;
+  --red: #E5626A; --green: #63C283; --x: #6A7385;
+  --f-display: 'Spectral', Georgia, serif;
+  --f-body: 'IBM Plex Sans', system-ui, sans-serif;
+  --f-mono: 'IBM Plex Mono', ui-monospace, monospace;
+  color-scheme: dark;
+}
+[hidden] { display: none !important; }
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--fg); font: 14px/1.45 var(--f-body); }
+.wrap { padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 22px 40px; max-width: 1500px; margin: 0 auto; }
+h1 { font: 600 30px/1.1 var(--f-display); margin: 0; letter-spacing: .01em; text-wrap: balance; }
+.sub { color: var(--muted); margin: 6px 0 0; max-width: 75ch; }
+header { display: flex; flex-wrap: wrap; gap: 14px 28px; align-items: end; justify-content: space-between; }
+.tabs { display: flex; gap: 4px; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 4px; }
+.tabs button { font: 500 14px var(--f-body); color: var(--muted); background: none; border: 0; padding: 8px 16px; border-radius: 7px; cursor: pointer; }
+.tabs button[aria-selected="true"] { background: var(--panel2); color: var(--gold); }
+button:focus-visible, tr:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+
+.filters { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin: 20px 0 12px; }
+.filters input { flex: 1 1 220px; min-width: 0; max-width: 340px; background: var(--panel); border: 1px solid var(--line); color: var(--fg); border-radius: 8px; padding: 8px 12px; font: 14px var(--f-body); }
+.cat { font: 500 13px var(--f-body); background: none; color: var(--muted); border: 1px solid var(--line); border-radius: 999px; padding: 5px 11px; cursor: pointer; }
+.cat[aria-pressed="true"] { color: var(--bg); background: var(--gold); border-color: var(--gold); }
+.cat b { font-variant-numeric: tabular-nums; }
+
+.tbl { overflow-x: auto; border: 1px solid var(--line); border-radius: 10px; background: var(--panel); -webkit-overflow-scrolling: touch; }
+table { border-collapse: separate; border-spacing: 0; width: 100%; }
+#p-acc table { min-width: 1120px; } #p-kw table { min-width: 900px; } #p-ven table { min-width: 760px; }
+th { text-align: left; font: 600 11px var(--f-body); letter-spacing: .07em; text-transform: uppercase; color: var(--muted); padding: 9px 10px; border-bottom: 1px solid var(--line); background: var(--panel); white-space: nowrap; }
+th.c, td.c { text-align: center; padding-inline: 6px; }
+th.grp { text-align: center; border-bottom: 1px solid var(--line); color: var(--gold); }
+th.tk { font-size: 10px; letter-spacing: .04em; white-space: normal; line-height: 1.25; width: 70px; }
+td { padding: 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+td.c { vertical-align: middle; }
+th:first-child, td:first-child { position: sticky; left: 0; z-index: 1; background: var(--panel); }
+tr.grp td { background: var(--bg); font: 600 15px var(--f-display); color: var(--gold); padding: 14px 10px 8px; letter-spacing: .02em; }
+tbody tr.row { cursor: pointer; }
+tbody tr.row:hover td { background: var(--panel2); }
+tbody tr.row.sel td { background: #232C3C; }
+.an { font-weight: 600; }
+.ej { color: var(--muted); font-size: 12.5px; }
+.vold .ok { color: #E0A84A !important; }
+.vv { margin-left: 8px; padding: 0 6px; border-radius: 6px; font-size: 11px; color: #9FD3A4; border: 1px solid rgba(159,211,164,.4); white-space: nowrap; }
+.vv.old { color: #E0A84A; border-color: rgba(224,168,74,.5); }
+.ped-r { margin: 3px 0 0 4px; padding: 1px 8px; border: 1px solid var(--gold, #d8b25a); border-radius: 6px; background: transparent; color: var(--gold, #d8b25a); font: 600 11.5px/1.5 system-ui, sans-serif; cursor: pointer; }
+.mom { display: inline-block; margin-top: 3px; padding: 1px 6px; border: 1px solid var(--line, rgba(255,255,255,.18)); border-radius: 6px; font: 11.5px/1.5 ui-monospace, Menlo, Consolas, monospace; color: var(--muted); user-select: all; }
+#d-mom { margin-left: 10px; vertical-align: middle; }
+#pedido-box { max-width: 760px; }
+.pd-h { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.pd-f { display: grid; grid-template-columns: minmax(130px, 200px) 1fr; gap: 4px 12px; margin: 8px 0; align-items: start; }
+.pd-l { font-weight: 600; } .pd-l small { display: block; font-weight: 400; color: var(--muted); font-size: 12px; line-height: 1.35; }
+.pd-f textarea, .pd-f input:not([type]) { width: 100%; box-sizing: border-box; padding: 8px; border-radius: 8px; border: 1px solid var(--line, rgba(255,255,255,.18)); background: rgba(255,255,255,.04); color: inherit; font: 14px/1.4 system-ui, sans-serif; }
+.pd-o { display: flex; flex-wrap: wrap; gap: 6px 14px; } .pd-o label { display: inline-flex; gap: 6px; align-items: center; min-height: 32px; cursor: pointer; }
+.pd-b { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 10px; }
+@media (max-width: 640px) { .pd-f { grid-template-columns: 1fr; } }
+#pedido-box { padding: 8px 0; }
+#pedido-box[hidden] { display: none; }
+.que { max-width: 34ch; }
+.aviso { color: var(--muted); font-size: 13px; max-width: 28ch; }
+.ok { color: var(--green); font-size: 17px; font-weight: 600; }
+.no { color: var(--x); font-size: 15px; }
+.est { display: inline-flex; align-items: center; gap: 6px; font-size: 12.5px; white-space: nowrap; }
+.dot { width: 9px; height: 9px; border-radius: 50%; flex: none; }
+.st-hecho { background: var(--green); } .st-no { background: #59627A; } .st-sinevento { background: var(--red); } .st-falta { background: #E0A43A; }
+.sall { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; flex-basis: 100%; }
+.sall .ej { color: var(--gold); }
+.sbar { width: 180px; height: 6px; border-radius: 3px; background: var(--panel2); border: 1px solid var(--line); overflow: hidden; }
+.sbar i { display: block; height: 100%; width: 0; background: var(--gold); transition: width .4s; }
+.sim { font: 600 12.5px var(--f-body); border-radius: 7px; padding: 6px 12px; border: 1px solid var(--gold-dim); background: var(--panel2); color: var(--gold); cursor: pointer; white-space: nowrap; display: inline-flex; gap: 6px; align-items: center; }
+.sim svg { width: 10px; height: 10px; }
+.sim:disabled { border-color: var(--line); color: var(--x); cursor: default; }
+.wimg { width: 96px; aspect-ratio: 16 / 10; object-fit: cover; object-position: top; border-radius: 5px; border: 1px solid var(--line); display: block; background: #0A0D12; }
+code { font: 12.5px var(--f-mono); color: var(--gold); }
+
+/* Split view: list on the left, the 4 videos big on the right */
+#split { position: fixed; inset: 0; z-index: 20; background: var(--bg); display: grid; grid-template-columns: 300px minmax(0, 1fr);
+  padding: env(safe-area-inset-top, 0px) env(safe-area-inset-right, 0px) env(safe-area-inset-bottom, 0px) env(safe-area-inset-left, 0px); }
+.sp-l { background: var(--panel); border-right: 1px solid var(--line); display: flex; flex-direction: column; min-height: 0; }
+.sp-l .tabs { margin: 12px; border-color: var(--line); }
+.sp-l .tabs { flex-wrap: wrap; }
+.sp-l .tabs button { flex: 1 1 40%; padding: 8px 6px; font-size: 13px; }
+.sp-list { overflow-y: auto; padding: 0 8px 20px; -webkit-overflow-scrolling: touch; }
+.sp-g { font: 600 13px var(--f-display); color: var(--gold); padding: 12px 8px 4px; }
+.sp-i { display: block; width: 100%; text-align: left; background: none; border: 0; color: var(--fg); font: 14px/1.3 var(--f-body); padding: 7px 10px; border-radius: 7px; cursor: pointer; }
+.sp-i small { color: var(--muted); font-size: 12px; }
+.sp-i:hover { background: var(--panel2); }
+.sp-i.on { background: #2A3346; color: var(--gold); }
+.sp-i.off { color: var(--x); }
+.sp-r { display: grid; grid-template-rows: auto minmax(0, 1fr); min-width: 0; min-height: 0; }
+.dh { display: flex; gap: 12px; align-items: center; justify-content: space-between; padding: 12px 16px; border-bottom: 1px solid var(--line); }
+.dh h2 { font: 600 24px/1.15 var(--f-display); margin: 0; }
+.dh .acts { display: flex; gap: 8px; align-items: center; }
+.x { background: none; border: 1px solid var(--line); color: var(--fg); height: 36px; min-width: 36px; padding: 0 10px; border-radius: 8px; cursor: pointer; font: 500 13px var(--f-body); flex: none; }
+.quad { display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; gap: 12px; padding: 12px 16px 16px; min-height: 0; }
+.quad .v { cursor: zoom-in; }
+.quad.focus { grid-template-columns: 1fr; grid-template-rows: 1fr; }
+.quad.focus .v:not(.f) { display: none; }
+.quad.focus .v.f { cursor: pointer; }
+/* one screen in big (Luis 23:53): click pauses, a timeline below, X back to the 4 screens */
+.fx-x { position: absolute; top: 8px; right: 8px; z-index: 3; width: 40px; height: 40px; border-radius: 50%; background: rgba(5,7,10,.75); color: var(--fg); border: 1px solid var(--line); font: 400 24px/1 var(--f-body); cursor: pointer; display: grid; place-items: center; }
+.fx-x:hover { color: var(--gold); border-color: var(--gold); }
+.fctl { position: absolute; left: 0; right: 0; bottom: 0; z-index: 3; display: flex; gap: 12px; align-items: center; padding: 14px 14px 12px; background: linear-gradient(transparent, rgba(5,7,10,.85)); cursor: default; }
+.fpp { width: 38px; height: 38px; flex: none; border-radius: 50%; border: 1px solid var(--line); background: rgba(5,7,10,.7); color: var(--fg); cursor: pointer; display: grid; place-items: center; }
+.fpp svg { width: 14px; height: 14px; }
+.ftl { flex: 1; min-width: 0; accent-color: var(--gold); height: 28px; cursor: pointer; }
+.ftm { font: 500 12.5px var(--f-body); color: var(--muted); font-variant-numeric: tabular-nums; flex: none; }
+.quad .v.wv { cursor: default; }
+#sim .v .box { cursor: pointer; }
+.v img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; }
+.v { background: #0A0D12; border: 1px solid var(--line); border-radius: 10px; overflow: hidden; display: flex; flex-direction: column; min-width: 0; min-height: 0; }
+.v .vt { padding: 8px 10px; font-weight: 600; font-size: 13px; border-bottom: 1px solid var(--line); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.v .vt span { color: var(--muted); font-weight: 400; }
+.v .box { position: relative; flex: 1; min-height: 0; }
+.v video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; background: #000; }
+.v .none { position: absolute; inset: 0; display: grid; place-content: center; text-align: center; gap: 4px; color: var(--x);
+  background: repeating-linear-gradient(135deg, rgba(240,207,142,.035) 0 10px, transparent 10px 20px); }
+.v .none .nw { max-width: 34ch; font-size: 13.5px; line-height: 1.4; color: var(--muted); padding: 0 12px; }
+.v .none b { font-size: 44px; line-height: 1; font-weight: 400; }
+
+/* Simular: the 4 screens full screen, playing together */
+#sim { position: fixed; inset: 0; z-index: 30; background: #05070A; display: grid; grid-template-rows: auto minmax(0, 1fr); padding: max(10px, env(safe-area-inset-top, 0px)) max(12px, env(safe-area-inset-right, 0px)) max(10px, env(safe-area-inset-bottom, 0px)) max(12px, env(safe-area-inset-left, 0px)); gap: 10px; }
+#sim .sh { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+#sim h2 { margin: 0; font: 600 21px/1.15 var(--f-display); }
+#sim .grid { display: grid; grid-template-rows: minmax(0, 1.25fr) minmax(0, 1fr); gap: 10px; min-height: 0; }
+#sim .row3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; min-height: 0; }
+#sim .v .box { aspect-ratio: auto; flex: 1; }
+#sim .mesa { min-height: 0; }
+.wait { color: var(--muted); font-size: 13px; }
+
+#pick { position: fixed; inset: 0; z-index: 35; background: rgba(5,7,10,.7); display: grid; place-items: center; padding: 16px; }
+.pk-c { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 18px 20px; width: min(440px, 100%); display: grid; gap: 8px; }
+.pk-c h3 { margin: 0; font: 600 20px var(--f-display); }
+.pk-c p { margin: 0; }
+.pk-o { display: flex; gap: 10px; align-items: center; padding: 6px 2px; cursor: pointer; }
+.pk-o input { width: 18px; height: 18px; accent-color: var(--gold); }
+.pk-o small { color: var(--muted); }
+.pk-a { display: block; color: var(--gold); padding: 4px 2px; }
+.pk-rec { border-top: 1px solid var(--line); margin-top: 4px; padding-top: 10px; }
+.pk-b { display: flex; gap: 8px; justify-content: flex-end; flex-wrap: wrap; margin-top: 6px; }
+#lb { position: fixed; inset: 0; background: rgba(5,7,10,.94); z-index: 40; display: grid; place-items: center; padding: max(16px, env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px)) max(16px, env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px)); cursor: zoom-out; }
+#lb img { max-width: 100%; max-height: 84vh; border-radius: 8px; box-shadow: 0 20px 80px #000; display: block; margin: 0 auto; }
+#lb p { color: var(--fg); margin: 10px 0 0; text-align: center; }
+
+@media (max-width: 900px) { #split { grid-template-columns: 230px minmax(0, 1fr); } }
+@media (max-width: 700px) {
+  #sim .row3 { grid-template-columns: 1fr; }
+  #split { grid-template-columns: 1fr; grid-template-rows: 34vh minmax(0, 1fr); } .sp-l { border-right: 0; border-bottom: 1px solid var(--line); }
+  #sim { overflow-y: auto; display: block; } #sim .grid { display: grid; grid-template-rows: none; } #sim .v .box { aspect-ratio: 16 / 9; }
+  h1 { font-size: 25px; }
+}
+
+/* Cartas que ganan o hacen perder (Luis 16:51) */
+#fincartas { margin-top: 26px; }
+#fincartas h2 { font-size: 20px; font-weight: 600; margin: 0 0 4px; }
+.fc-n { font: 600 16px var(--f-mono); color: var(--gold); }
+#lb iframe { width: min(92vw, 160vh); aspect-ratio: 16 / 9; max-height: 84vh; border: 0; border-radius: 8px; box-shadow: 0 20px 80px #000; display: block; background: #0B0F14; }
+</style>
+
+<div class="wrap">
+  <header>
+    <div>
+      <h1>Acciones de la partida</h1>
+      <p class="sub">Vídeos de una partida real de 6 grabada con la app. Cada acción tiene 4 vídeos: la mesa y la tableta del que lo hace, la del afectado y la de alguien a quien no le afecta. Toca una fila para verlos, o Simular para verlos juntos a pantalla completa.</p>
+    </div>
+    <div class="tabs" role="tablist">
+      <button id="t-acc" role="tab" aria-selected="true">Acciones</button>
+      <button id="t-ven" role="tab" aria-selected="false">Ventanas</button>
+      <button id="t-kw" role="tab" aria-selected="false">Palabras clave</button>
+      <button id="t-fin" role="tab" aria-selected="false">Derrotas y victorias</button>
+    </div>
+  </header>
+
+  <section id="p-acc">
+    <div class="filters">
+      <input id="q" type="search" placeholder="Buscar: exiliar, Wrath, vida…" aria-label="Buscar acción">
+      <div id="cats" style="display:flex;flex-wrap:wrap;gap:6px"></div>
+      <div class="sall"><button class="sim" data-sall="a">Simular todo</button><div class="sbar" hidden><i></i></div><span class="ej" id="sall-a"></span></div>
+    </div>
+    <p class="ej" style="margin:0 0 8px">✓ hay vídeo · <span class="vold"><span class="ok">✓</span></span> vídeo de una versión anterior del juego · ✕ falta grabarlo · — no existe para esa jugada (toca la fila para ver por qué)<span class="verinfo"></span></p>
+    <div class="tbl"><table>
+      <thead>
+        <tr><th rowspan="2">Acción</th><th rowspan="2">Qué pasa</th><th rowspan="2">Aviso a los demás</th><th class="grp" colspan="4">Vídeos</th><th rowspan="2" class="c tk">Animación en la mesa</th><th rowspan="2" class="c tk">Animación en la tableta</th><th rowspan="2">Estado</th><th rowspan="2"></th></tr>
+        <tr><th class="c tk">Mesa</th><th class="c tk">Lo haces tú</th><th class="c tk">Te afecta</th><th class="c tk">No te afecta</th></tr>
+      </thead>
+      <tbody id="rows"></tbody>
+    </table></div>
+    <div id="fincartas" hidden></div>
+  </section>
+
+  <section id="p-ven" hidden>
+    <div class="filters"><input id="vq" type="search" placeholder="Buscar: atacar, pila, mulligan…" aria-label="Buscar ventana"><button class="sim" id="cap-all">Tomar todas las capturas</button><span class="ej" id="cap-all-m"></span></div>
+    <p class="ej" style="margin:0 0 8px">Debajo de cada captura: <span class="vv" style="margin:0">pNNN · fecha</span> = capturada con el juego instalado · <span class="vv old" style="margin:0">Versión anterior</span> = conviene volver a capturarla<span class="verinfo"></span></p>
+    <div class="tbl"><table>
+      <thead><tr><th>Ventana</th><th>Qué es</th><th>Acciones que la usan</th><th>Captura</th></tr></thead>
+      <tbody id="wrows"></tbody>
+    </table></div>
+  </section>
+
+  <section id="p-kw" hidden>
+    <div class="filters"><input id="kq" type="search" placeholder="Buscar: vuela, arrollar, cascada…" aria-label="Buscar palabra clave">
+      <div id="kfil" style="display:flex;flex-wrap:wrap;gap:6px"></div>
+      <div class="sall"><button class="sim" data-sall="k">Simular todo</button><div class="sbar" hidden><i></i></div><span class="ej" id="sall-k"></span></div></div>
+    <p class="ej" style="margin:0 0 8px">✓ hay vídeo · <span class="vold"><span class="ok">✓</span></span> vídeo de una versión anterior del juego · ✕ falta grabarlo · — no existe para esa jugada (toca la fila para ver por qué)<span class="verinfo"></span></p>
+    <div class="tbl"><table>
+      <thead>
+        <tr><th rowspan="2">Palabra clave</th><th rowspan="2">Qué pasa</th><th rowspan="2">Quién y con qué carta</th><th class="grp" colspan="4">Vídeos</th><th rowspan="2"></th></tr>
+        <tr><th class="c tk">Mesa</th><th class="c tk">Lo haces tú</th><th class="c tk">Te afecta</th><th class="c tk">No te afecta</th></tr>
+      </thead>
+      <tbody id="krows"></tbody>
+    </table></div>
+  </section>
+</div>
+
+<div id="split" hidden>
+  <nav class="sp-l"><div class="tabs" role="tablist"><button data-stab="acc">Acciones</button><button data-stab="ven">Ventanas</button><button data-stab="kw">Palabras clave</button><button data-stab="fin">Derrotas y victorias</button></div>
+    <div class="sp-list" id="sp-list"></div></nav>
+  <section class="sp-r"><div class="dh"><h2 id="d-t"></h2><span class="mom" id="d-mom" hidden></span><div class="acts"><button class="sim" id="d-ped" hidden>Pedir cambio</button><button class="sim" id="d-cap" hidden>Tomar captura</button><button class="sim" id="d-pro" hidden title="Abre tu tableta en una partida con la jugada preparada: la haces tú">Probar</button><button class="sim" id="d-sim">Simular</button><button class="x" id="d-x">Volver a la tabla</button></div></div>
+    <div class="quad" id="d-b"></div></section>
+</div>
+<div id="sim" hidden></div>
+<div id="pick" hidden></div>
+<div id="lb" hidden></div>
+
+<script src="acciones.js" charset="utf-8"></script>
+<script src="vid/index.js" charset="utf-8"></script>
+<script src="keywords.js" charset="utf-8"></script>
+<script src="kwextra.js" charset="utf-8"></script>
+<script src="vid/kw/index.js" charset="utf-8"></script>
+<script src="vid/kw/packs.js"></script>
+<script src="porque.js" charset="utf-8"></script>
+<script src="escenas.js" charset="utf-8"></script>
+<script src="fincartas.js" charset="utf-8"></script>
+<script>
+const PLAY = '<svg viewBox="0 0 10 10"><path d="M2 1l7 4-7 4z" fill="currentColor"/></svg>';
+const EST = { hecho: 'En la app', falta: 'Falta en la app', no: 'Solo ventana (no se anima en la mesa)', sinevento: 'Sin evento' };
+const ROLES = [['mesa', 'Mesa'], ['causa', 'Lo haces tú'], ['tu', 'Te afecta'], ['otro', 'No te afecta']];
+const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const V = typeof VID !== 'undefined' ? VID : {};
+const KV = typeof KVID !== 'undefined' ? KVID : {};
+const KWX = typeof MTG_KW_EXTRA !== 'undefined' ? MTG_KW_EXTRA : {};
+const KWN = Object.assign({}, KWX, typeof MTG_KEYWORDS !== 'undefined' ? MTG_KEYWORDS : {});
+const NOVID = Object.assign({}, typeof KNOVID !== 'undefined' ? KNOVID : {}, typeof MTG_NOSIM !== 'undefined' ? MTG_NOSIM : {});
+const ESC = typeof MTG_ESC !== 'undefined' ? MTG_ESC : {}, ESCA = typeof MTG_ESC_A !== 'undefined' ? MTG_ESC_A : {};
+for (const k in ESC) delete NOVID[k]; // a scene now exists for it
+// Rows without a video can still be simulated with these screens (Luis 21:42)
+const DEFROLES = { causa: 'Luis', tu: 'Pablo', otro: 'Malaguita' };
+// Simular always films the 4 screens (Luis 14:59): a role the scene has no player for gets a free player's tablet
+const papeles = (r) => ['causa', 'tu', 'otro'].map((k) => k + ':' + r[k]).join(',');
+function all4(roles) {
+  const r = { ...(roles || {}) }, used = new Set(Object.values(r));
+  const free = ['Luis', 'Pablo', 'Malaguita', 'Calero', 'Albertito', 'Elena'].filter((n) => !used.has(n));
+  for (const k of ['causa', 'tu', 'otro']) if (!r[k]) r[k] = free.shift();
+  return r;
+}
+const ui = { cat: null, q: '', vq: '', kq: '', kf: null, sel: null };
+// Window codes (4b, 4b5…) mean nothing to players: show the window's name instead.
+const VAL = typeof VALIAS !== 'undefined' ? VALIAS : {};
+const nc = (t) => String(t ?? '').replace(/\b(3b|4b\d?|4[c-f]|5b|8[b-f]|10b|12b)\b|(?<=la )(5|8c)\b/g, (k, x, y) => { const v = VENTANAS[VAL[k] || k]; return v ? (y ? 'ventana «' : '«') + v[0] + '»' : k; });
+const tick = (b) => b ? '<span class="ok" aria-label="Sí">✓</span>' : '<span class="no" aria-label="No">✕</span>';
+const has = (v, r) => !!v && (r === 'mesa' || !!v.roles[r]);
+// The catalog server on Luis's PC (port 8090) saves captures and recordings made from this page.
+// Served by the catalog server itself (PC, home wifi or the internet link): talk to it directly. Otherwise (web artifact, file) try the PC.
+const ONSRV = location.port === '8090' || (/^https?:$/.test(location.protocol) && !/claude|anthropic/.test(location.hostname));
+// Served under the game's /catalogo (Raspberry Pi, behind the game login): every server call carries that prefix
+const PRE = /^\/catalogo(\/|$)/.test(location.pathname) ? '/catalogo' : '';
+const SRV = ONSRV ? PRE : 'http://localhost:8090';
+// Through the internet link the game can't open on this device: Simular plays it on the PC and shows the recording here
+const REMOTO = ONSRV && location.protocol === 'https:';
+let GRAB = {};
+const gkey = (key) => key[0] + '-' + key.slice(2).toLowerCase().replace(/[^a-z0-9]+/g, '-');
+const grabbed = (key, r) => (GRAB[gkey(key)] || []).includes(r);
+const hasV = (key, v, r) => grabbed(key, r) || has(v, r);
+// Which videos were filmed with the game installed now (Luis 2026-10-24 19:18): GET /version gives the installed
+// version and since when; a recording older than that, or an old .mp4 from the first catalog, is «versión anterior»
+let VER = {};
+async function loadVer() { try { const r = await fetch(SRV + '/version', { cache: 'no-store' }); if (r.ok) VER = await r.json(); } catch (e) {}
+  document.querySelectorAll('.verinfo').forEach((x) => { x.textContent = VER.version ? ' · Juego instalado: ' + VER.version + ' (desde el ' + fecha(VER.desde) + ')' : ''; }); }
+const fecha = (ms) => ms ? new Date(ms).toLocaleString('es-ES', { day: 'numeric', month: 'numeric', hour: '2-digit', minute: '2-digit' }) : '';
+// true = filmed with the installed version, false = older, null = unknown (no version info)
+function alDia(key, r) {
+  if (!VER.desde) return null;
+  if (!grabbed(key, r)) return false; // the first catalog's .mp4 videos
+  const t = GRAB._v && GRAB._v[gkey(key)]; return t ? t >= VER.desde : null;
+}
+// Window captures: same «pNNN · fecha» / «Versión anterior» mark as the videos (server sends "_img" mtimes)
+function capVer(k) {
+  const t = GRAB._img && GRAB._img[k]; if (!VER.desde || !t || !CAPTURAS[k]) return '';
+  return t >= VER.desde ? `<span class="vv">${esc(VER.version || 'al día')} · ${fecha(t)}</span>`
+    : `<span class="vv old" title="Capturada el ${fecha(t)}, antes de instalar ${esc(VER.version || 'la versión actual')}">Versión anterior</span>`;
+}
+async function loadGrab() { try { const c = new AbortController(); setTimeout(() => c.abort(), 2500); const r = await fetch(SRV + '/grabados', { cache: 'no-store', signal: c.signal }); if (r.ok) { GRAB = await r.json(); return true; } } catch (e) {} return false; }
+// Why a video is missing: 'no' = it can't exist for this play, 'falta' = it could exist but wasn't recorded.
+function why(key, v, r) {
+  const id = key.slice(2);
+  const PQ = typeof PORQUE !== 'undefined' ? PORQUE : { a: {}, k: {} };
+  if (v) {
+    const p = key[0] === 'a' ? PQ.a[id] : PQ.k[id] && ['no', PQ.k[id]];
+    if (!p) return ['no', 'No existe: en esta jugada no hay ningún jugador afectado.'];
+    return [p[0], (p[0] === 'no' ? 'No existe: ' : 'Falta: ') + p[1]];
+  }
+  if (key[0] === 'k') {
+    if (id in NOVID) return id === 'companion' ? ['falta', 'Falta: ' + NOVID[id].charAt(0).toLowerCase() + NOVID[id].slice(1) + '.'] : ['no', NOVID[id] + '.'];
+    return ['falta', 'Falta: ninguna carta de los mazos grabados la tiene.'];
+  }
+  return ['falta', 'Falta: esta jugada no salió en la partida grabada.'];
+}
+const ticks = (v, key) => ROLES.map(([r]) => { if (hasV(key, v, r)) return alDia(key, r) === false ? `<td class="c vold" title="Grabado con una versión anterior del juego">${tick(true)}</td>` : `<td class="c">${tick(true)}</td>`; const [k, t] = why(key, v, r);
+  return `<td class="c" title="${esc(t)}">${k === 'no' ? '<span class="no" aria-label="No existe">—</span>' : tick(false)}</td>`; }).join('');
+const noSim = (key) => key[0] === 'a' ? (escena(key) ? '' : 'Esta jugada no tiene escena.') : (key.slice(2) in NOVID ? 'No se puede simular: ' + NOVID[key.slice(2)].charAt(0).toLowerCase() + NOVID[key.slice(2)].slice(1) + '.' : '');
+const simBtn = (key, v) => { const n = v ? '' : noSim(key); return `<button class="sim" data-sim="${esc(key)}"${n ? ` disabled title="${esc(n)}"` : ''}>${PLAY}Simular</button>`; };
+const animMesa = (a) => a.estado !== 'no' ? !!(a.anim || a.hoyMesa) : !!a.hoyMesa;
+const animTab = (a) => a.estado !== 'no' ? !!(a.anim || a.hoyTablet) : !!a.hoyTablet;
+
+// ---- Acciones ----
+function match(a) {
+  if (ui.fin ? a.cat !== 'fin' : a.cat === 'fin') return false; // own tab (Luis 15:20)
+  if (ui.cat && a.cat !== ui.cat) return false;
+  if (!ui.q) return true;
+  const t = (a.accion + ' ' + a.ej + ' ' + a.que + ' ' + a.aviso).toLowerCase();
+  return ui.q.toLowerCase().split(/\s+/).every((w) => t.includes(w));
+}
+function renderRows() {
+  document.getElementById('cats').innerHTML = `<button class="cat" data-cat="" aria-pressed="${!ui.cat}">Todas</button>` +
+    (ui.fin ? [] : CATS.filter(([k]) => k !== 'fin')).map(([k, v]) => `<button class="cat" data-cat="${k}" aria-pressed="${ui.cat === k}">${v}</button>`).join('');
+  let html = '';
+  for (const [k, name] of CATS) {
+    const list = ACCIONES.filter((a) => a.cat === k && match(a));
+    if (!list.length) continue;
+    html += `<tr class="grp"><td colspan="11">${name}</td></tr>`;
+    for (const a of list) {
+      const v = V[a.id];
+      html += `<tr class="row${ui.sel === 'a:' + a.id ? ' sel' : ''}" data-open="a:${a.id}" tabindex="0">
+        <td><div class="an">${esc(a.accion)}</div><div class="ej">${esc(a.ej && a.ej !== '—' ? a.ej : '')}</div><span class="mom">momento: ${esc(a.id)}</span> <button class="ped-r" data-ped="a:${esc(a.id)}">Pedir cambio</button></td>
+        <td class="que">${esc(nc(a.que))}</td><td class="aviso">${esc(nc(a.aviso))}</td>
+        ${ticks(v, 'a:' + a.id)}<td class="c">${tick(animMesa(a))}</td><td class="c">${tick(animTab(a))}</td>
+        <td><span class="est"><span class="dot st-${a.estado}"></span>${EST[a.estado] || a.estado}</span></td>
+        <td class="c">${simBtn('a:' + a.id, v)}</td></tr>`;
+    }
+  }
+  document.getElementById('rows').innerHTML = html || '<tr><td colspan="11" class="ej" style="padding:24px">Nada coincide con la búsqueda.</td></tr>';
+}
+
+// ---- Ventanas ----
+function renderWindows() {
+  const q = ui.vq.toLowerCase();
+  const rows = Object.entries(VENTANAS).filter(([k, [n, d]]) => !q || (k + ' ' + n + ' ' + d).toLowerCase().includes(q));
+  document.getElementById('wrows').innerHTML = rows.map(([k, [n, d]]) => {
+    const used = ACCIONES.filter((a) => a.ventanas.includes(k)).map((a) => a.accion);
+    const img = CAPTURAS[k] ? `<img class="wimg" src="${CAPTURAS[k]}" alt="" loading="lazy">` : '<span class="no">✕</span>';
+    return `<tr class="row" data-open="w:${k}" tabindex="0"><td class="an">${esc(n)}</td><td class="que">${esc(nc(d))}</td>
+      <td class="aviso">${esc(used.join(', ') || '—')}</td><td>${img}${capVer(k) ? '<br>' + capVer(k).replace('class="vv', 'style="margin:0" class="vv') : ''}</td></tr>`;
+  }).join('') || '<tr><td colspan="4" class="ej" style="padding:24px">Nada coincide con la búsqueda.</td></tr>';
+}
+function zoom(k) {
+  const lb = document.getElementById('lb'), [n, d] = VENTANAS[k] || [k, ''];
+  lb.innerHTML = CAPTURAS[k] ? `<div><img src="${CAPTURAS[k]}" alt="Captura de ${esc(n)}"><p><b>${esc(n)}</b> · ${esc(nc(d))}</p></div>`
+    : `<p style="font-size:16px"><b>${esc(n)}</b><br>Todavía no hay captura de esta ventana.</p>`;
+  lb.hidden = false;
+}
+
+// ---- Palabras clave ----
+function kwList() {
+  const ids = [...new Set([...Object.keys(KWN), ...Object.keys(KV)])];
+  return ids.map((id) => ({ id, es: (KWN[id] || [])[0] || id, que: (KWN[id] || [])[1] || '', g: KWX[id] && !(typeof MTG_KEYWORDS !== 'undefined' && MTG_KEYWORDS[id]) ? KWX[id][2] : 'Palabra clave', v: KV[id] }))
+    .sort((a, b) => a.es.localeCompare(b.es, 'es'));
+}
+function renderKw() {
+  const kHas = (k) => !!k.v || (GRAB[gkey('k:' + k.id)] || []).length > 0;
+  const all = kwList(), n = all.filter(kHas).length;
+  const gs = [...new Set(all.map((k) => k.g))];
+  document.getElementById('kfil').innerHTML = [['', 'Todas', all.length], ['v', 'Con vídeo', n], ['n', 'Sin vídeo', all.length - n], ...gs.map((g) => ['g:' + g, g === 'Palabra clave' ? 'Palabras clave' : g === 'Acción' ? 'Acciones' : g === 'Término' ? 'Contadores y términos' : 'Palabras de habilidad', all.filter((k) => k.g === g).length])]
+    .map(([k, l, c]) => `<button class="cat" data-kf="${k}" aria-pressed="${(ui.kf || '') === k}">${l} <b>${c}</b></button>`).join('');
+  const q = ui.kq.toLowerCase();
+  const list = all.filter((k) => (!ui.kf || (ui.kf.startsWith('g:') ? k.g === ui.kf.slice(2) : (ui.kf === 'v') === kHas(k))) && (!q || (k.es + ' ' + k.id + ' ' + k.que + ' ' + (k.v ? k.v.card : '')).toLowerCase().includes(q)));
+  document.getElementById('krows').innerHTML = list.map((k) => {
+    const who = k.v ? `<div class="an">${esc(k.v.roles.causa)}</div><div class="ej">con ${esc(k.v.card)}</div>`
+      : ESC[k.id] && (GRAB[gkey('k:' + k.id)] || []).length ? `<div class="an">Luis</div><div class="ej">con ${esc(ESC[k.id])}</div>`
+      : ESC[k.id] && !(k.id in NOVID) ? `<div class="ej">Sin vídeo todavía</div><div class="ej">se simula con ${esc(ESC[k.id])}</div>`
+      : `<div class="ej">${esc(k.id in NOVID ? NOVID[k.id] : k.g !== 'Palabra clave' ? 'Todavía sin vídeo' : 'Ninguna carta de los mazos la tiene')}</div>`;
+    return `<tr class="row${ui.sel === 'k:' + k.id ? ' sel' : ''}" data-open="k:${esc(k.id)}" tabindex="0">
+      <td><div class="an">${esc(k.es)}</div><div class="ej">${esc(k.id)}${k.g !== 'Palabra clave' ? ' · ' + esc(k.g.toLowerCase()) : ''}</div><span class="mom">momento: kw:${esc(k.id)}</span> <button class="ped-r" data-ped="k:${esc(k.id)}">Pedir cambio</button></td><td class="que">${esc(k.que)}</td><td>${who}</td>
+      ${ticks(k.v, 'k:' + k.id)}<td class="c">${simBtn('k:' + k.id, k.v)}</td></tr>`;
+  }).join('') || '<tr><td colspan="8" class="ej" style="padding:24px">Nada coincide con la búsqueda.</td></tr>';
+}
+
+// ---- Videos ----
+// Online, a keyword's 4 clips come packed in one file (pk/<dir>.mp4); local copies keep separate files.
+const USEPK = typeof KPACK !== 'undefined' && location.protocol !== 'file:';
+const PKS = {};
+function item(key) {
+  const [t, id] = [key[0], key.slice(2)];
+  if (t === 'a') { const a = ACCIONES.find((x) => x.id === id); return a && { key, title: a.accion, v: V[id], base: 'vid/', kw: false }; }
+  const v = KV[id]; return { key, title: (KWN[id] || [id])[0], v, base: 'vid/kw/', kw: true };
+}
+function vtitle(it, r) {
+  const n = it.v && it.v.roles[r];
+  if (r === 'mesa') return 'Mesa proyectada';
+  const l = ROLES.find((x) => x[0] === r)[1];
+  return n ? `Tableta de ${esc(n)} <span>· ${l.toLowerCase()}</span>` : `Tableta <span>· ${l.toLowerCase()}</span>`;
+}
+// the row's first clips (vid/…): the server deletes them once a new recording is saved
+const viejo = (it) => (it && it.v && it.v.dir ? (it.kw ? 'vid/kw/' : 'vid/') + it.v.dir : '');
+function tile(it, r, cls = '') {
+  // once a row has its own recording, only that recording is shown (Luis 03:27: just the last one)
+  const anyG = (GRAB[gkey(it.key)] || []).length > 0, g = grabbed(it.key, r), ok = g || (!anyG && has(it.v, r));
+  const body = g ? `<video data-g="${SRV}/grab/${gkey(it.key)}/${r}.webm?${(GRAB._v && GRAB._v[gkey(it.key)]) || GRAB.t || ''}" data-r="${r}" muted playsinline preload="auto"></video>`
+    : ok ? `<video data-dir="${esc(it.v.dir)}" data-r="${r}" data-kw="${it.kw ? 1 : ''}" muted playsinline preload="auto"></video>`
+    : anyG ? '<div class="none"><b>—</b><span class="nw">No sale en la última grabación.</span></div>'
+    : (() => { const [k, t] = why(it.key, it.v, r); return `<div class="none"><b>${k === 'no' ? '—' : '✕'}</b><span class="nw">${esc(t)}</span></div>`; })();
+  const ad = ok ? alDia(it.key, r) : null, t = g && GRAB._v && GRAB._v[gkey(it.key)];
+  const vb = ad === true ? `<span class="vv">${esc(VER.version || 'al día')}${t ? ' · ' + fecha(t) : ''}</span>` : ad === false ? `<span class="vv old" title="Grabado ${t ? 'el ' + fecha(t) : 'con el primer catálogo'}, antes de instalar ${esc(VER.version || 'la versión actual')}">Versión anterior</span>` : '';
+  return `<div class="v ${cls}"><div class="vt">${vtitle(it, r)}${vb}</div><div class="box">${body}</div></div>`;
+}
+function load(vd) {
+  if (vd.dataset.g) { vd.src = vd.dataset.g; return Promise.resolve(); }
+  const { dir, r } = vd.dataset;
+  if (vd.dataset.kw && USEPK && KPACK[dir] && KPACK[dir][r]) {
+    const [off, len] = KPACK[dir][r];
+    PKS[dir] = PKS[dir] || fetch('pk/' + dir + '.mp4').then((x) => x.ok ? x.blob() : null).catch(() => null);
+    return PKS[dir].then((b) => { vd.src = b ? URL.createObjectURL(b.slice(off, off + len, 'video/mp4')) : 'vid/kw/' + dir + '/' + r + '.mp4'; });
+  }
+  vd.src = (vd.dataset.kw ? 'vid/kw/' : 'vid/') + dir + '/' + r + '.mp4';
+  return Promise.resolve();
+}
+// A video that says it plays but its clock does not move (an old copy of a file that was saved again): load it fresh
+const STUCK = new Map();
+setInterval(() => document.querySelectorAll('video').forEach((vd) => {
+  if (vd.paused || vd.ended || !vd.src) { STUCK.delete(vd); return; }
+  const s = STUCK.get(vd);
+  if (!s || s.t !== vd.currentTime) { STUCK.set(vd, { t: vd.currentTime, n: 0 }); return; }
+  if (++s.n < 3 || !vd.dataset.g) return;
+  STUCK.delete(vd); const at = vd.currentTime;
+  vd.src = vd.dataset.g + '&r=' + Date.now(); vd.addEventListener('loadedmetadata', () => { vd.currentTime = at; vd.play().catch(() => {}); }, { once: true });
+}), 1000);
+const ready = (vd) => new Promise((res) => { if (vd.readyState >= 3) return res(); vd.addEventListener('canplaythrough', res, { once: true }); vd.addEventListener('error', res, { once: true }); setTimeout(res, 15000); });
+async function startAll(root, loop) {
+  const vds = [...root.querySelectorAll('video')];
+  vds.forEach((vd) => { vd.loop = loop; });
+  await Promise.all(vds.map(load));
+  await Promise.all(vds.map(ready));
+  if (!root.isConnected) return;
+  vds.forEach((vd) => { if (vd.dataset.hold) return; vd.currentTime = 0; vd.play().catch(() => {}); });
+}
+// ---- one screen in big: click = pause/play, timeline to move through it, X back to the 4 screens (Luis 23:53)
+const PAUSE = '<svg viewBox="0 0 10 10"><path d="M2 1h2v8H2zM6 1h2v8H6z" fill="currentColor"/></svg>';
+const mmss = (t) => { t = Math.max(0, t || 0); return Math.floor(t / 60) + ':' + String(Math.floor(t % 60)).padStart(2, '0'); };
+// play/pause button + timeline on one video (zoomed screen and the "Ver vídeos" view)
+function addCtl(box, vd) {
+  box.insertAdjacentHTML('beforeend', `<div class="fctl"><button class="fpp" aria-label="Pausa">${PAUSE}</button><input class="ftl" type="range" min="0" max="1000" value="0" aria-label="Línea de tiempo"><span class="ftm">0:00 / 0:00</span></div>`);
+  const pp = box.querySelector('.fpp'), tl = box.querySelector('.ftl'), tm = box.querySelector('.ftm');
+  let drag = false;
+  const show = () => { pp.innerHTML = vd.paused ? PLAY : PAUSE; pp.setAttribute('aria-label', vd.paused ? 'Reproducir' : 'Pausa'); };
+  const tick = () => { if (!box.isConnected || !tl.isConnected) return; const d = vd.duration || 0; if (!drag && d && isFinite(d)) tl.value = Math.round(vd.currentTime / d * 1000); tm.textContent = mmss(vd.currentTime) + ' / ' + mmss(isFinite(d) ? d : 0); requestAnimationFrame(tick); };
+  pp.onclick = (e) => { e.stopPropagation(); togglePlay(vd); };
+  tl.oninput = () => { drag = true; const d = vd.duration; if (d && isFinite(d)) vd.currentTime = tl.value / 1000 * d; };
+  tl.onchange = () => { drag = false; };
+  vd.addEventListener('play', show); vd.addEventListener('pause', show); vd.addEventListener('ended', show); show(); requestAnimationFrame(tick);
+}
+// a paused video stays paused: startAll and the stuck-video reload never restart it (vd.dataset.hold)
+function togglePlay(vd) { if (vd.paused || vd.ended) { vd.dataset.hold = ''; if (vd.ended) vd.currentTime = 0; vd.play().catch(() => {}); } else { vd.dataset.hold = '1'; vd.pause(); } }
+function enterFocus(v) {
+  const q = v.parentElement; q.classList.add('focus');
+  q.querySelectorAll('.v').forEach((x) => { x.classList.toggle('f', x === v); if (x !== v) x.querySelectorAll('video').forEach((vd) => vd.pause()); });
+  const vd = v.querySelector('video'), box = v.querySelector('.box');
+  box.insertAdjacentHTML('beforeend', `<button class="fx-x" aria-label="Volver a las 4 pantallas">×</button>`);
+  if (vd) addCtl(box, vd);
+}
+function exitFocus(q) {
+  q.classList.remove('focus');
+  q.querySelectorAll('.fx-x,.fctl').forEach((x) => x.remove());
+  q.querySelectorAll('.v').forEach((x) => x.classList.remove('f'));
+  q.querySelectorAll('video').forEach((vd) => { vd.dataset.hold = ''; vd.currentTime = 0; vd.play().catch(() => {}); });
+}
+function stopAll(root) { root.querySelectorAll('video').forEach((vd) => vd.pause()); }
+
+function openWin(key) {
+  const k = key.slice(2), [n, d] = VENTANAS[k] || [k, ''];
+  ui.sel = key; ui.stab = ui.stab || 'ven';
+  document.getElementById('d-t').textContent = n;
+  document.getElementById('d-sim').hidden = true; document.getElementById('d-pro').hidden = true;
+  const cp = document.getElementById('d-cap'); cp.hidden = false; cp.dataset.k = k;
+  const b = document.getElementById('d-b'); stopAll(b); b.classList.add('focus');
+  b.innerHTML = `<div class="v f wv"><div class="vt">${esc(nc(d))}${capVer(k)}</div><div class="box">${CAPTURAS[k] ? `<img src="${CAPTURAS[k]}" alt="Captura de ${esc(n)}">` : '<div class="none"><b>✕</b>Todavía no hay captura</div>'}</div></div>`;
+  document.getElementById('split').hidden = false; document.querySelector('.wrap').hidden = true;
+  renderSplit(); const on = document.querySelector('.sp-i.on'); if (on) on.scrollIntoView({ block: 'nearest' });
+}
+function openRow(key) {
+  if (key[0] === 'w') return openWin(key);
+  const it = item(key); if (!it) return;
+  document.getElementById('d-sim').hidden = false; document.getElementById('d-cap').hidden = true;
+  ui.sel = key; ui.stab = ui.stab || (key[0] === 'k' ? 'kw' : it.cat === 'fin' || ui.fin ? 'fin' : 'acc');
+  document.getElementById('d-t').textContent = it.title;
+  // «momento»: the row id the animations skill uses to find the code (Luis 2026-10-23 04:47)
+  const mom = momento(key), dm = document.getElementById('d-mom'), dp = document.getElementById('d-ped');
+  dm.hidden = dp.hidden = !mom; dm.textContent = mom ? 'momento: ' + mom : ''; dp.dataset.mom = mom ? key : '';
+  const pb = document.getElementById('pedido-box'); if (pb) pb.hidden = true;
+  const pb2 = document.getElementById('d-pro'), psc = escena(key); pb2.hidden = !psc || !(ONSRV || LOCAL) || REMOTO; pb2.dataset.k = key;
+  const sb = document.getElementById('d-sim'); sb.dataset.sim = key; sb.disabled = !it.v && !!noSim(key); sb.innerHTML = PLAY + 'Simular';
+  const b = document.getElementById('d-b'); stopAll(b); b.classList.remove('focus');
+  b.innerHTML = ROLES.map(([r]) => tile(it, r)).join('');
+  b.querySelectorAll('.v').forEach((v, i) => { v.dataset.vi = i; });
+  document.getElementById('split').hidden = false; document.querySelector('.wrap').hidden = true;
+  renderSplit(); startAll(b, true);
+  const on = document.querySelector('.sp-i.on'); if (on) on.scrollIntoView({ block: 'nearest' });
+}
+function renderSplit() {
+  const st = ui.stab;
+  document.querySelectorAll('[data-stab]').forEach((x) => x.setAttribute('aria-selected', x.dataset.stab === st));
+  let h = '';
+  if (st === 'acc' || st === 'fin') for (const [k, name] of CATS) {
+    if ((st === 'fin') !== (k === 'fin')) continue; // Luis 07:34: «Derrotas y victorias» keeps its own list here too
+    const list = ACCIONES.filter((a) => a.cat === k); if (!list.length) continue;
+    h += `<div class="sp-g">${name}</div>` + list.map((a) => `<button class="sp-i${ui.sel === 'a:' + a.id ? ' on' : ''}${V[a.id] ? '' : ' off'}" data-open="a:${a.id}">${esc(a.accion)}</button>`).join('');
+  }
+  else if (st === 'kw') h = kwList().map((k) => `<button class="sp-i${ui.sel === 'k:' + k.id ? ' on' : ''}${k.v ? '' : ' off'}" data-open="k:${esc(k.id)}">${esc(k.es)} <small>${esc(k.id)}</small></button>`).join('');
+  else h = Object.entries(VENTANAS).map(([k, [n]]) => `<button class="sp-i${ui.sel === 'w:' + k ? ' on' : ''}" data-open="w:${k}">${esc(n)}</button>`).join('');
+  document.getElementById('sp-list').innerHTML = h;
+}
+function closeDrawer() { const b = document.getElementById('d-b'); stopAll(b); b.innerHTML = ''; document.getElementById('split').hidden = true; document.querySelector('.wrap').hidden = false; ui.sel = null; ui.stab = null; rerender(); }
+const SCN = {"a-la-mano":"a_a-la-mano","atacar":"combat","barajar":"a_barajar","bloquear":"combat","buscar":"a_buscar","comandante":"a_comandante","contadores":"a_contadores","contadores-menos":"a_contadores-menos","contrarrestar":"a_contrarrestar","control":"a_control","danio-area":"a_danio-area","danio-combate":"a_danio-combate","danio-criatura":"a_danio-criatura","danio-jugador":"a_danio-jugador","descartar":"a_descartar","destruir-todo":"a_destruir-todo","disparador":"a_disparador","eliminado":"endgame","entra":"a_entra","exiliar":"a_exiliar","ficha":"a_ficha","ganar":"a_fin-ganar","ganar-vida":"a_ganar-vida","girar":"a_girar","habilidad":"a_habilidad","lanzar":"a_lanzar","moler":"a_moler","monarca":"a_monarca","moneda":"a_moneda","mostrar":"a_mostrar","muere":"a_muere","mulligan":"boot","objetivo":"a_objetivo","ordenar":"a_ordenar","pagar-vida":"a_pagar-vida","perder-vida":"a_perder-vida","reanimar":"a_reanimar","rendirse":"a_rendirse","resolver":"a_resolver","responder":"a_responder","robar":"a_robar","sacrificar":"a_sacrificar","sino":"a_sino","sobrevive":"a_sobrevive","te-atacan":"combat","tierra":"tierra","fin-vida":"a_fin-vida","fin-veneno":"a_fin-veneno","fin-comandante":"a_fin-comandante","fin-biblioteca":"a_fin-biblioteca","fin-efecto":"a_fin-efecto","fin-infinito":"a_fin-infinito","fin-ataque":"a_fin-ataque","fin-perder-vida":"a_fin-perder-vida","fin-efecto-pierde":"a_fin-efecto-pierde","fin-gana-biblioteca":"a_fin-gana-biblioteca","fin-propia":"a_fin-propia","fin-no-pierdes":"a_fin-no-pierdes","fin-cero-vidas":"a_fin-cero-vidas","fin-en-vez":"a_fin-en-vez","fin-cuando-pierde":"a_fin-cuando-pierde","turno":"turno","veneno":"a_veneno","x":"a_x","noche":"noche","modos":"modos","tipo":"tipo","opcionales":"opcionales","adivinar":"adivinar"};
+// Simular en la app: only when the page is opened at home (the PC file or the iPad server on :8090).
+const LOCAL = location.protocol === 'file:' || location.port === '8090';
+const appHost = () => location.port === '8090' ? location.hostname : 'localhost';
+function escena(key) { const id = key.slice(2); if (key[0] === 'a') return SCN[id] && SCN[id] !== 'boot' ? 'SC.' + SCN[id] : null; return 'KW.' + (id === 'nightbound' ? 'daybound' : id); }
+function simular(key) {
+  const it = item(key); if (!it || (!it.v && noSim(key))) return;
+  const sc = escena(key), pk = document.getElementById('pick'), roles = all4(it.v ? it.v.roles : DEFROLES);
+  // start the hidden game now, while the screens are being chosen (Luis 23:39: the start takes the longest)
+  if (sc && (ONSRV || LOCAL)) fetch(SRV + '/auto?tipo=preparar', { cache: 'no-store' }).catch(() => {});
+  const opts = ROLES.filter(([r]) => r === 'mesa' || roles[r]).map(([r, l]) => {
+    const name = r === 'mesa' ? 'mesa' : roles[r];
+    return `<label class="pk-o"><input type="checkbox" value="${esc(name)}" checked> ${r === 'mesa' ? 'Mesa proyectada' : `Tableta de ${esc(name)} <small>· ${l.toLowerCase()}</small>`}</label>`;
+  }).join('');
+  const why = !sc ? 'Esta jugada no se puede recrear: no tiene escena preparada.' : '';
+  pk.innerHTML = `<div class="pk-c" role="dialog" aria-label="Simular"><h3>Simular · ${esc(it.title)}</h3><p class="ej">¿Qué pantallas quieres ver?</p>${opts}
+    <label class="pk-o pk-rec"><input type="checkbox" id="pk-rec"> Grabar <small>· lo grabado sustituye a los vídeos de la web</small></label>
+    ${why ? `<p class="ej">${why}</p>` : ''}${REMOTO && !why ? '<p class="ej">Estás fuera de casa: la partida se juega en tu PC. Se abre una pestaña para verla en vivo y al terminar ves la grabación aquí.</p>' : ''}<div id="pk-links"></div><div class="pk-b"><button class="x" id="pk-x">Cancelar</button>    <button class="sim" id="pk-app" data-k="${esc(key)}" data-sc="${esc(sc || '')}"${sc ? '' : ' disabled'}>${PLAY}Simular</button></div></div>`;
+  pk.hidden = false;
+}
+// One browser tab per chosen screen. The first one (sim.html) sets up the game; the URL formats come from the app thread.
+function simTabs(sc, sel, rec) {
+  const base = ONSRV ? location.origin + PRE + '/' : 'http://localhost:8090/'; // the catalog server starts the game itself
+  const q = `escena=${encodeURIComponent(sc)}&ver=${encodeURIComponent(sel.join(','))}&grabar=${rec ? 1 : 0}` + (PRE ? '&pre=' + PRE : '');
+  return [[ 'Simulación' + (sel.includes('mesa') ? ' y mesa' : ''), `${base}simular?${q}` ],
+    ...sel.filter((n) => n !== 'mesa').map((n) => [`Tableta de ${n}`, `${base}play.html?jugador=${encodeURIComponent(n)}&sim=1`])];
+}
+// «Probar» (Luis 2026-10-23 08:53): the scene only sets up the board; then your tablet and the table open in tabs and
+// you make the play yourself (the other seats answer by themselves). sim.html does it with probar=1 (app side).
+function probar(key) {
+  const sc = escena(key); if (!sc) return;
+  const base = ONSRV ? location.origin + PRE + '/' : 'http://' + appHost() + ':8090/';
+  window.open(`${base}simular?escena=${encodeURIComponent(sc)}&ver=${encodeURIComponent('mesa,Luis')}&grabar=0&probar=1${PRE ? '&pre=' + PRE : ''}`, '_blank');
+}
+function pickScreens() { return [...document.querySelectorAll('#pick .pk-o:not(.pk-rec) input:checked')].map((i) => i.value); }
+function verVideos(key, only) {
+  const it = item(key); if (!it || !it.v) return;
+  stopAll(document.getElementById('d-b'));
+  const s = document.getElementById('sim');
+  s.innerHTML = `<div class="sh"><h2>${esc(it.title)} <span class="wait" id="s-w">Cargando los 4 vídeos…</span></h2>
+    <div class="acts" style="display:flex;gap:8px"><button class="sim" id="s-again">${PLAY}Repetir</button><button class="x" id="s-x" aria-label="Cerrar">×</button></div></div>
+    <div class="grid">${tile(it, 'mesa', 'mesa')}<div class="row3">${['causa', 'tu', 'otro'].map((r) => tile(it, r)).join('')}</div></div>`;
+  if (only) { const keep = (r) => r === 'mesa' ? only.includes('mesa') : only.includes(it.v.roles[r]);
+    s.querySelectorAll('video').forEach((vd) => { if (!keep(vd.dataset.r)) vd.closest('.v').remove(); });
+    s.querySelectorAll('.v .none').forEach((n) => n.closest('.v').remove());
+    if (!only.includes('mesa')) { s.querySelector('.grid').style.gridTemplateRows = '1fr'; }
+    const r3 = s.querySelector('.row3'); if (!r3.children.length) { r3.remove(); s.querySelector('.grid').style.gridTemplateRows = '1fr'; } else r3.style.gridTemplateColumns = `repeat(${r3.children.length}, minmax(0, 1fr))`; }
+  s.querySelectorAll('.v').forEach((v) => { const vd = v.querySelector('video'); if (vd) addCtl(v.querySelector('.box'), vd); });
+  s.hidden = false; s.dataset.key = key;
+  startAll(s, false).then(() => { const w = document.getElementById('s-w'); if (w) w.textContent = ''; });
+}
+function closeSim() { const s = document.getElementById('sim'); stopAll(s); s.innerHTML = ''; s.hidden = true; if (ui.sel) document.querySelectorAll('#d-b video').forEach((vd) => vd.play().catch(() => {})); }
+function rerender() { renderRows(); renderKw(); renderWindows(); }
+
+// ---- Capture and record by themselves (Luis 04:57): the catalog server plays the scene in the game, hidden, and saves the result
+const NOSRV = 'Para esto, abre el catálogo en tu PC (CATALOGO-EN-IPAD, en la carpeta del catálogo) y vuelve a intentarlo.';
+async function autoJob(params, onState) {
+  let j;
+  try { j = await (await fetch(SRV + '/auto?' + new URLSearchParams(params), { cache: 'no-store' })).json(); } catch (e) { return { fin: true, ok: false, estado: NOSRV }; }
+  while (!j.fin) {
+    onState(j); await new Promise((r) => setTimeout(r, 1500));
+    try { j = await (await fetch(SRV + '/auto-estado?id=' + j.id, { cache: 'no-store' })).json(); } catch (e) { return { fin: true, ok: false, estado: NOSRV }; }
+  }
+  onState(j); return j;
+}
+const imgUrl = (k) => (SRV ? SRV + '/' : '') + 'img/' + k + '.jpg?' + Date.now();
+async function capture(k) {
+  const pk = document.getElementById('pick'), [n, , screen] = VENTANAS[k] || [k];
+  pk.innerHTML = `<div class="pk-c" role="dialog" aria-label="Tomar captura"><h3>Captura · ${esc(n)}</h3>
+    <p class="ej" id="cap-m" style="color:var(--gold)">Empezando…</p><div class="pk-b"><button class="x" id="pk-x">Cerrar</button></div></div>`;
+  pk.hidden = false;
+  const m = document.getElementById('cap-m');
+  const j = await autoJob({ tipo: 'captura', ventana: k, ver: screen || 'Luis' }, (x) => { if (m.isConnected) m.textContent = x.estado; });
+  if (!j.ok) { if (m.isConnected) m.textContent = j.estado; return; }
+  CAPTURAS[k] = imgUrl(k); (GRAB._img = GRAB._img || {})[k] = Date.now(); renderWindows();
+  if (!pk.hidden && m.isConnected) pk.hidden = true;
+  if (ui.sel === 'w:' + k) openWin('w:' + k);
+}
+// «Pedir cambio» (Luis 2026-10-24 10:57): a form with what the animations skill expects. «Enviar» appends the block to
+// ABRIR\6 Pedidos de animaciones.txt through the catalog's 8090 door (POST /pedido); the number is given there, so it
+// only goes up when a request is sent. Without the door it copies the block instead.
+const PED_DONDE = ['carta', 'vida del jugador', 'centro de la mesa', 'mi tableta', 'tableta del rival'];
+const PED_CAMPOS = [
+  ['ahora', 'Ahora', 'Qué se ve hoy y qué está mal.', 'p. ej. la carta desaparece de golpe y no se entiende quién la mató'],
+  ['quiero', 'Quiero', 'Qué debe verse, paso a paso y en orden.', 'p. ej. 1) la carta tiembla, 2) sale una calavera, 3) vuela al cementerio'],
+  ['duracion', 'Duración', 'Cuánto debe durar, en segundos, o «igual que ahora».', 'igual que ahora'],
+  ['notocar', 'No tocar', 'Lo que ya te gusta y debe quedar igual.', 'p. ej. el número de daño flotante'],
+];
+// momento: the action id, or kw:<keyword> for Palabras clave (the skill finds the keyword's scene and effects)
+function momento(key) { return !key ? null : key[0] === 'a' ? key.slice(2) : key[0] === 'k' ? 'kw:' + key.slice(2) : null; }
+function pedidoTexto(key, n) {
+  const it = item(key), box = document.getElementById('pedido-box'), v = (id) => box.querySelector('#pd-' + id).value.trim().replace(/\s*\n\s*/g, ' ');
+  const donde = [...box.querySelectorAll('[name=pd-donde]:checked')].map((x) => x.value).join(', ');
+  const pr = (box.querySelector('[name=pd-pri]:checked') || {}).value || 'media';
+  return `## ${n || '?'}. ${it.title}\nmomento: ${momento(key)}\nahora: ${v('ahora')}\nquiero: ${v('quiero')}\ndónde: ${donde}\nduración: ${v('duracion') || 'igual que ahora'}\nno tocar: ${v('notocar')}\ncaptura: ${box.querySelector('#pd-cap').checked ? 'sí (la pego en el hilo)' : 'no'}\nprioridad: ${pr}\n`;
+}
+async function pedidoSiguiente() { try { const r = await fetch(SRV + '/pedido', { cache: 'no-store' }); if (r.ok) return (await r.json()).siguiente; } catch (e) { /* no door */ } return null; }
+async function pedirCambio(key) {
+  const it = item(key); if (!it) return;
+  let box = document.getElementById('pedido-box');
+  if (!box) { box = document.createElement('div'); box.id = 'pedido-box'; document.querySelector('.sp-r .dh').after(box); }
+  box.dataset.key = key; box.hidden = false;
+  box.innerHTML = `<div class="pd-h"><b>Pedido <span id="pd-n">nº …</span> · ${esc(it.title)}</b> <span class="mom">momento: ${esc(momento(key))}</span></div>
+    <p class="ej">Describe lo que se ve, no el código. Se guarda en ABRIR\\6 Pedidos de animaciones.txt, que es lo que le pasas a la skill de animaciones.</p>
+    ${PED_CAMPOS.map(([id, l, d, ph]) => `<label class="pd-f"><span class="pd-l">${l}<small>${d}</small></span>${id === 'ahora' || id === 'quiero' ? `<textarea id="pd-${id}" rows="2" placeholder="${esc(ph)}"></textarea>` : `<input id="pd-${id}" placeholder="${esc(ph)}"${id === 'duracion' ? ' value="igual que ahora"' : ''}>`}</label>`).join('')}
+    <div class="pd-f"><span class="pd-l">Dónde<small>En qué parte se ve la animación (puedes marcar varias).</small></span><div class="pd-o">${PED_DONDE.map((d) => `<label><input type="checkbox" name="pd-donde" value="${d}"> ${d}</label>`).join('')}</div></div>
+    <div class="pd-f"><span class="pd-l">Captura<small>Si tienes una imagen, pégala en el hilo junto con el pedido.</small></span><div class="pd-o"><label><input type="checkbox" id="pd-cap"> Pegaré una captura en el hilo</label></div></div>
+    <div class="pd-f"><span class="pd-l">Prioridad<small>Qué hace primero la skill.</small></span><div class="pd-o">${['alta', 'media', 'baja'].map((x) => `<label><input type="radio" name="pd-pri" value="${x}"${x === 'media' ? ' checked' : ''}> ${x}</label>`).join('')}</div></div>
+    <div class="pd-b"><button class="sim" id="pedido-ok">Enviar</button><button class="x" id="pedido-copy">Copiar</button><button class="x" id="pedido-x">Cerrar</button><span class="ej" id="pedido-m"></span></div>`;
+  const n = await pedidoSiguiente(), nEl = box.querySelector('#pd-n');
+  if (nEl) nEl.textContent = n ? `nº ${n} (se asigna al enviar)` : '';
+  box.querySelector('#pd-ahora').focus();
+}
+function pedidoCopiar(txt, m) {
+  const ta = Object.assign(document.createElement('textarea'), { value: txt }); ta.style.cssText = 'position:fixed;opacity:0'; document.body.append(ta);
+  const ok = () => { m.textContent = 'Copiado: pégalo en tu pedido.'; };
+  const manual = () => { ta.select(); let c = false; try { c = document.execCommand('copy'); } catch (e) {} ta.remove(); if (c) ok(); else { m.textContent = 'No se pudo copiar.'; } };
+  if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(txt).then(() => { ta.remove(); ok(); }, manual); else manual();
+}
+async function pedidoEnviar() {
+  const box = document.getElementById('pedido-box'), key = box.dataset.key, m = box.querySelector('#pedido-m'), btn = box.querySelector('#pedido-ok');
+  if (!box.querySelector('#pd-ahora').value.trim() && !box.querySelector('#pd-quiero').value.trim()) { m.textContent = 'Rellena al menos «Ahora» o «Quiero».'; return; }
+  btn.disabled = true; m.textContent = 'Enviando…';
+  try {
+    const r = await fetch(SRV + '/pedido', { method: 'POST', headers: { 'Content-Type': 'application/json; charset=utf-8' }, body: JSON.stringify({ texto: pedidoTexto(key, '#') }) });
+    if (!r.ok) throw new Error(r.status);
+    const j = await r.json();
+    box.innerHTML = `<div class="pd-h"><b>✓ Pedido nº ${j.numero} guardado</b></div><p class="ej">Está en ABRIR\\6 Pedidos de animaciones.txt (${j.total} en total). Pásale ese archivo a la skill de animaciones cuando quieras.</p><div class="pd-b"><button class="x" id="pedido-x">Cerrar</button></div>`;
+  } catch (e) {
+    btn.disabled = false;
+    pedidoCopiar(pedidoTexto(key), m); m.textContent = 'No se pudo guardar en el archivo (abre el catálogo en tu PC). ' + m.textContent;
+  }
+}
+async function captureAll(btn, solo) {
+  const ks = Object.keys(VENTANAS).filter((k) => !solo || !solo.length || solo.includes(k)), out = document.getElementById('cap-all-m');
+  btn.disabled = true; let bad = 0;
+  for (let i = 0; i < ks.length; i++) {
+    const k = ks[i];
+    const j = await autoJob({ tipo: 'captura', ventana: k, ver: VENTANAS[k][2] || 'Luis' }, (x) => { out.textContent = `${i + 1} de ${ks.length} · ${VENTANAS[k][0]}: ${x.estado}`; });
+    if (j.ok) { CAPTURAS[k] = imgUrl(k); (GRAB._img = GRAB._img || {})[k] = Date.now(); renderWindows(); } else { bad++; if (j.estado === NOSRV) { out.textContent = NOSRV; btn.disabled = false; return; } }
+  }
+  out.textContent = bad ? `Listo. ${bad} no salieron.` : 'Listo: todas las capturas son nuevas.'; btn.disabled = false;
+}
+async function record(key, sc, sel, live, film = true) {
+  const box = document.getElementById('pk-links'), go = document.getElementById('pk-app');
+  // Luis 22:57: watch it while it plays, in its own tab (the hidden browser on the PC sends its screens to servidor/vivo.html)
+  let on = false;
+  const it = item(key), seeLive = (x) => { if (!live || on || !x.id) return; on = true;
+    live.location.href = (SRV ? SRV + '/' : '') + 'servidor/vivo.html?' + new URLSearchParams({ id: x.id, ver: sel.join(','), t: it ? it.title : key }); };
+  go.disabled = true;
+  box.innerHTML = '<p class="ej" id="rec-m" style="color:var(--gold)">Empezando…</p>';
+  const m = document.getElementById('rec-m');
+  const j = await autoJob({ tipo: film ? 'grabar' : 'probar', clave: key, escena: sc, ver: sel.join(','), viejo: viejo(it), papeles: papeles(all4(it && it.v ? it.v.roles : DEFROLES)) }, (x) => { seeLive(x); if (m.isConnected) m.textContent = x.estado; });
+  if (live && !on) try { live.close(); } catch (e) {}
+  go.disabled = false;
+  if (!j.ok) { if (m.isConnected) m.textContent = j.estado; return; }
+  if (!film) { if (m.isConnected) document.getElementById('pick').hidden = true; return; }
+  await loadGrab(); GRAB.t = Date.now(); rerender();
+  if (m.isConnected) document.getElementById('pick').hidden = true;
+  if (ui.sel === key) openRow(key);
+  if (REMOTO) verVideos(key, sel);
+}
+
+// ---- Simular todo (Luis 00:09): every row of the table is played and recorded again on the PC, several at once,
+// with no new tabs; the bar shows how many are done and how long each one takes
+const SALL = { on: null, stop: false };
+function simList(t) {
+  if (t === 'a') return ACCIONES.filter((a) => ui.fin ? a.cat === 'fin' : a.cat !== 'fin').map((a) => 'a:' + a.id).filter((k) => escena(k));
+  return kwList().map((k) => 'k:' + k.id).filter((k) => { const id = k.slice(2); return !noSim(k) && (KV[id] || ESC[id]); });
+}
+const dura = (ms) => { const s = Math.round(ms / 1000); return s >= 3600 ? Math.floor(s / 3600) + ' h ' + Math.round((s % 3600) / 60) + ' min' : s >= 60 ? Math.floor(s / 60) + ' min ' + String(s % 60).padStart(2, '0') + ' s' : s + ' s'; };
+async function simAll(t, btn) {
+  if (SALL.on) { SALL.stop = true; btn.textContent = 'Deteniendo…'; return; }
+  const out = document.getElementById('sall-' + t), bar = btn.parentElement.querySelector('.sbar'), fill = bar.querySelector('i');
+  if (!(ONSRV || LOCAL)) { out.textContent = NOSRV; return; }
+  let ks = simList(t);
+  // Run from the PC test panel (SIMULAR-TODO.ps1, Luis 2026-10-21 05:50): only the listed rows, or only rows not recorded since «desde»
+  const SQ = globalThis.SIMTODO;
+  if (SQ) { if (SQ.solo.length) ks = ks.filter((k) => SQ.solo.includes(k)); if (SQ.desde) ks = ks.filter((k) => !(((GRAB._v || {})[gkey(k)] || 0) >= SQ.desde)); }
+  const n = ks.length; if (!n) { out.textContent = 'Listo: no queda ninguna escena pendiente'; return; }
+  SALL.on = t; SALL.stop = false;
+  document.querySelectorAll('[data-sall]').forEach((b) => { b.disabled = b !== btn; }); btn.textContent = 'Detener';
+  bar.hidden = false; fill.style.width = '0';
+  let next = 0, done = 0, bad = 0, motores = 1, jugando = false; const t0 = Date.now(), fails = [], now = new Map(), saving = new Set();
+  const show = () => { const per = done ? (Date.now() - t0) / done : 0;
+    out.textContent = `${done}/${n} listas` + (saving.size ? ` · ${saving.size} guardando vídeos` : '') + (per ? ` · ${dura(per)} por escena · faltan unos ${dura(per * (n - done))}` : '')
+      + (jugando ? ' · de 1 en 1 (estás jugando)' : Math.min(SQ ? SQ.n : 2, motores) > 1 ? ` · ${Math.min(SQ ? SQ.n : 2, motores)} a la vez` : '') + (bad ? ` · ${bad} no salieron` : '')
+      + (now.size && !SALL.stop ? ` · ahora: ${[...now].map(([t, m]) => m ? `${t} (motor ${m})` : t).join(', ')}` : SALL.stop ? ' · terminando las que están en marcha…' : '');
+    fill.style.width = (100 * (done + 0.6 * saving.size) / n) + '%'; };
+  // Luis 19/10 06:52: several scenes at once. The PC says how many games it can play now (up to 4; 1 while he plays);
+  // twice that many are kept in flight, so each game plays the next scene while the videos of the last one are saved
+  const cuantos = async () => { try { const m = await (await fetch(SRV + '/auto-motores', { cache: 'no-store' })).json(); motores = Math.max(1, m.motores || 1); jugando = !!m.jugando; } catch (e) { motores = 1; } return Math.min(SQ ? SQ.n : 2, motores); };
+  let target = await cuantos(), running = 0; const going = new Set();
+  show();
+  const lane = async () => {
+    running++;
+    try {
+      while (!SALL.stop && next < n && running <= target) {
+        const key = ks[next++], it = item(key), roles = all4(it && it.v ? it.v.roles : DEFROLES), title = it ? it.title : key;
+        const ver = ['mesa', ...new Set(['causa', 'tu', 'otro'].map((r) => roles[r]).filter(Boolean))];
+        const j = await autoJob({ tipo: 'grabar', clave: key, escena: escena(key), ver: ver.join(','), viejo: viejo(it), papeles: papeles(roles) }, (x) => { if (x.fase === 'jugando' && now.get(title) !== x.motor) { now.set(title, x.motor); show(); } else if (x.fase !== 'jugando' && now.delete(title)) show(); if (x.fase === 'guardando' && !saving.has(title)) { saving.add(title); show(); } });
+        now.delete(title); saving.delete(title); done++;
+        if (j.ok) { await loadGrab(); GRAB.t = Date.now(); rerender(); }
+        else { bad++; fails.push(title + ': ' + j.estado); if (j.estado === NOSRV) SALL.stop = true; }
+        target = await cuantos(); show(); spawn();
+      }
+    } finally { running--; }
+  };
+  const spawn = () => { while (!SALL.stop && running < target && next < n) { const p = lane(); going.add(p); p.catch(() => {}).then(() => going.delete(p)); } };
+  spawn();
+  while (going.size) await Promise.race([...going]).catch(() => {});
+  const stopped = done < n;
+  out.textContent = (stopped ? `Detenido en ${done}/${n}` : `Listo: ${n}/${n}`) + ` en ${dura(Date.now() - t0)}` + (bad ? ` · ${bad} no salieron (pasa el ratón para ver cuáles)` : ' · todos los vídeos son nuevos');
+  out.title = fails.join('\n');
+  SALL.on = null; btn.textContent = 'Simular todo';
+  document.querySelectorAll('[data-sall]').forEach((b) => { b.disabled = false; });
+}
+
+
+// ---- Cartas que ganan o hacen perder (only in «Derrotas y victorias») ----
+function renderFinCartas() {
+  const box = document.getElementById('fincartas'), G = globalThis.MTG_FINCARTAS || [];
+  box.hidden = !ui.fin || !G.length;
+  if (box.hidden) return;
+  // Luis 07:34: a table of the ways a card wins or loses (no card lists), each with its proposed animation playing
+  box.innerHTML = `<h2>Cartas que ganan o hacen perder la partida</h2>
+    <p class="ej">Cartas legales en Commander cuyo texto dice que alguien gana o pierde, agrupadas por cómo las animamos. «Ver» enseña la animación propuesta; la fila abre sus vídeos y su Simular en el juego.</p>
+    <div class="tbl"><table><thead><tr><th>Cómo</th><th>Qué pasa</th><th class="c">Cartas</th><th>Animación propuesta</th><th>Fila para simularla</th><th></th></tr></thead><tbody>${G.map((g) => { const f = ACCIONES.find((a) => a.id === g.fila);
+      return `<tr><td><b>${esc(g.titulo)}</b></td><td>${esc(g.que)}</td><td class="c fc-n">${g.cartas.length}</td><td>${esc(g.anim)}</td><td>${f ? `<button class="x" data-open="a:${esc(f.id)}">${esc(f.accion)}</button>` : '—'}</td><td><button class="sim" data-finanim="${esc(g.id)}" data-t="${esc(g.titulo)}">${PLAY}Ver</button></td></tr>`; }).join('')}</tbody></table></div>`;
+}
+function tab(which) {
+  // «Derrotas y victorias» is the actions table showing only the ways a game ends
+  const fin = which === 'fin', pane = fin ? 'acc' : which;
+  for (const w of ['acc', 'ven', 'kw', 'fin']) document.getElementById('t-' + w).setAttribute('aria-selected', which === w);
+  for (const w of ['acc', 'ven', 'kw']) document.getElementById('p-' + w).hidden = pane !== w;
+  if (!!ui.fin !== fin) { ui.fin = fin; ui.cat = null; renderRows(); }
+  renderFinCartas();
+  try { localStorage.setItem('cat-tab', which); } catch (e) {}
+}
+document.addEventListener('click', async (e) => {
+  const t = e.target.closest('[data-sall],.fx-x,.fctl,#sim .v,#cap-all,#d-cap,#pk-x,#pk-vid,#pk-app,[data-stab],#d-b .v,[data-sim],[data-open],[data-zoom],[data-cat],[data-kf],#d-x,#s-x,#s-again,#lb,#t-acc,#t-ven,#t-kw,#t-fin,[data-finanim],#d-ped,#d-pro,#pedido-ok,#pedido-copy,[data-ped],#pedido-x');
+  if (!t) return;
+  if (t.id === 'lb') { t.hidden = true; t.innerHTML = ''; return; }
+  if (t.dataset.finanim) { const lb = document.getElementById('lb'); lb.innerHTML = `<div><iframe src="anim/fin.html#${encodeURIComponent(t.dataset.finanim)}" title="${esc(t.dataset.t)}"></iframe><p>${esc(t.dataset.t)} · toca fuera para cerrar</p></div>`; lb.hidden = false; return; }
+  if (t.dataset.sall) return simAll(t.dataset.sall, t);
+  if (t.dataset.stab) { ui.stab = t.dataset.stab; return renderSplit(); }
+  if (t.classList.contains('fx-x')) { const q = t.closest('.quad'); if (q) exitFocus(q); return; }
+  if (t.classList.contains('fctl')) return; // its own buttons
+  if (t.matches('#sim .v')) { const vd = t.querySelector('video'); if (vd) togglePlay(vd); return; }
+  if (t.matches('#d-b .v') && !t.classList.contains('wv')) { const q = t.parentElement; if (!q.classList.contains('focus')) return enterFocus(t); const vd = t.querySelector('video'); if (vd) togglePlay(vd); return; }
+  if (t.id === 'd-x') return closeDrawer();
+  if (t.id === 's-x') return closeSim();
+  if (t.id === 'd-cap') { document.getElementById('pick').hidden = true; return capture(t.dataset.k); }
+  if (t.id === 'pk-x') { document.getElementById('pick').hidden = true; return; }
+  if (t.id === 'cap-all') return captureAll(t);
+  if (t.id === 'd-ped') return pedirCambio(t.dataset.mom);
+  if (t.id === 'd-pro') return probar(t.dataset.k);
+  if (t.dataset.ped) { await openRow(t.dataset.ped); return pedirCambio(t.dataset.ped); }
+  if (t.id === 'pedido-ok') return pedidoEnviar();
+  if (t.id === 'pedido-copy') { const b = document.getElementById('pedido-box'); return pedidoCopiar(pedidoTexto(b.dataset.key), b.querySelector('#pedido-m')); }
+  if (t.id === 'pedido-x') { document.getElementById('pedido-box').hidden = true; return; }
+  if (t.id === 'pk-vid') { const sel = pickScreens(); document.getElementById('pick').hidden = true; return verVideos(t.dataset.k, sel); }
+  if (t.id === 'pk-app') {
+    const sel = pickScreens(), rec = document.getElementById('pk-rec').checked;
+    if (!sel.length) { document.getElementById('pk-links').innerHTML = '<p class="ej">Elige al menos una pantalla.</p>'; return; }
+    // Luis 22:57: always played by the PC's catalog server, watched live in a new tab
+    let live = null; try { live = window.open('', 'mtg-simulacion'); // always the same tab, never one per Simular
+    if (live) live.document.write('<body style="background:#0f1218;color:#d9b45a;font:15px system-ui;padding:20px">Empezando la simulación…</body>'); } catch (e) {} return record(t.dataset.k, t.dataset.sc, sel, live, rec || REMOTO);
+  }
+  if (t.id === 's-again') { const s = document.getElementById('sim'); s.querySelectorAll('video').forEach((vd) => { vd.dataset.hold = ''; vd.currentTime = 0; vd.play().catch(() => {}); }); return; }
+  if (t.id.startsWith('t-')) return tab(t.id.slice(2));
+  if (t.dataset.sim) { e.stopPropagation(); return simular(t.dataset.sim); }
+  if (t.dataset.open) return openRow(t.dataset.open);
+  if (t.dataset.zoom) return zoom(t.dataset.zoom);
+  if (t.dataset.cat !== undefined) { ui.cat = t.dataset.cat || null; return renderRows(); }
+  if (t.dataset.kf !== undefined) { ui.kf = t.dataset.kf || null; return renderKw(); }
+});
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') { const fq = document.querySelector('#d-b.focus'); if (fq && fq.querySelector('.fx-x')) return exitFocus(fq); if (!document.getElementById('pick').hidden) document.getElementById('pick').hidden = true; else if (!document.getElementById('lb').hidden) document.getElementById('lb').hidden = true; else if (!document.getElementById('sim').hidden) closeSim(); else if (ui.sel) closeDrawer(); }
+  if (e.key === 'Enter' && e.target.dataset) { if (e.target.dataset.open) openRow(e.target.dataset.open); else if (e.target.dataset.zoom) zoom(e.target.dataset.zoom); }
+});
+document.getElementById('q').addEventListener('input', (e) => { ui.q = e.target.value.trim(); renderRows(); });
+document.getElementById('vq').addEventListener('input', (e) => { ui.vq = e.target.value.trim(); renderWindows(); });
+document.getElementById('kq').addEventListener('input', (e) => { ui.kq = e.target.value.trim(); renderKw(); });
+
+renderRows(); renderWindows(); renderKw();
+Promise.all([loadGrab(), loadVer()]).then(([ok]) => { if ((ok && Object.keys(GRAB).length) || VER.desde) rerender(); });
+try { const t = localStorage.getItem('cat-tab'); if (t === 'ven' || t === 'kw' || t === 'fin') tab(t); } catch (e) {}
+// ?simtodo=a|fin|k&n=1|2&desde=<ms>&solo=a:id,a:id → «Simular todo» starts by itself; the page title carries the progress
+// («SIMTODO …», then «SIMTODO FIN …») so SIMULAR-TODO.ps1 can read it from the browser's /json list
+(async () => {
+  const q = new URLSearchParams(location.search), w = q.get('simtodo'); if (!/^(a|fin|k|ven)$/.test(w || '')) return;
+  if (w === 'ven') { // window captures, one at a time
+    await loadGrab(); tab('ven'); const out = document.getElementById('cap-all-m');
+    const tick = setInterval(() => { document.title = 'SIMTODO ' + (out.textContent || 'empezando'); }, 2000);
+    try { await captureAll(document.getElementById('cap-all'), (q.get('solo') || '').split(',').filter(Boolean)); } finally { clearInterval(tick); document.title = 'SIMTODO FIN ' + (out.textContent || ''); }
+    return;
+  }
+  globalThis.SIMTODO = { n: Math.max(1, Math.min(2, +q.get('n') || 1)), desde: +q.get('desde') || 0, solo: (q.get('solo') || '').split(',').filter(Boolean) };
+  await loadGrab(); tab(w === 'k' ? 'kw' : w === 'fin' ? 'fin' : 'acc'); rerender();
+  const t = w === 'k' ? 'k' : 'a', out = document.getElementById('sall-' + t), btn = document.querySelector(`[data-sall="${t}"]`);
+  const tick = setInterval(() => { document.title = 'SIMTODO ' + (out.textContent || 'empezando'); }, 2000);
+  try { await simAll(t, btn); } finally { clearInterval(tick); document.title = 'SIMTODO FIN ' + (out.textContent || '') + (out.title ? ' | ' + out.title.replace(/\n/g, ' ; ') : ''); }
+})();
+</script>

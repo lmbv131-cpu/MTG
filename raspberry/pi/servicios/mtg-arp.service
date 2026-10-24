@@ -1,0 +1,13 @@
+[Unit]
+Description=MTG Local: recordar al router cada 2 s que la IP de la Pi es suya (el Proxmox de casa responde ARP por otros y se la quita)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+EnvironmentFile=/opt/mtglocal/config.env
+ExecStart=/bin/bash -c 'while true; do /usr/sbin/arping -U -q -c 1 -I eth0 "$IP" || /usr/bin/arping -U -q -c 1 -I eth0 "$IP"; sleep 2; done'
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target

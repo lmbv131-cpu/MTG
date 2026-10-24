@@ -1,0 +1,18 @@
+[Unit]
+Description=MTG Local: catálogo de acciones (127.0.0.1:8088; la puerta de la red es mtg-catalogo-puerta en 8090)
+After=network-online.target mtglocal.service
+
+[Service]
+User=mtg
+WorkingDirectory=/opt/mtglocal/catalogo
+Environment=CATALOGO_NAVEGADOR=/usr/bin/chromium
+# The Pi draws slower than the PC: wait for the screen to settle before each capture
+Environment=CATALOGO_PAUSA_CAPTURA_MS=1500
+# Simular's hidden game and browser inherit this: they never slow down the real game
+Nice=10
+ExecStart=/opt/mtglocal/runtime/bin/java -Xmx512m -Djava.awt.headless=true -Dfile.encoding=UTF-8 -jar servidor/CatalogoServer.jar . 8088
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target

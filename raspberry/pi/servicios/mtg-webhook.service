@@ -1,0 +1,12 @@
+[Unit]
+Description=MTG Local: receptor del webhook de GitHub (127.0.0.1:9000)
+After=network.target
+
+[Service]
+User=mtg
+ExecStart=/usr/bin/python3 -I /opt/mtglocal/mtg-webhook.py
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

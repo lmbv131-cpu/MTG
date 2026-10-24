@@ -8,5 +8,7 @@ cambió, baja solo los archivos que cambiaron y luego las imágenes de las carta
 - `engine/res`: las reglas de las cartas, ediciones, fichas y mazos preconstruidos.
 - `manifiesto.txt`: sha1, tamaño y ruta de cada archivo.
 - `VERSION.txt`: el número de paquete del juego (pNNN).
+- `catalogo/`: el código del catálogo de acciones (sin vídeos, imágenes ni registros).
+- `raspberry/pi/`: los scripts de la Raspberry Pi (sin claves).
 
 Esta carpeta la rellena INSTALAR.bat del juego, que también la sube.

@@ -1,0 +1,13 @@
+[Unit]
+Description=MTG Local: puerta del catálogo (8090 → 8088, «Pedir cambio» y apagado de Simular con sin-motor.txt)
+After=mtg-catalogo.service
+
+[Service]
+User=mtg
+WorkingDirectory=/opt/mtglocal/catalogo/servidor
+ExecStart=/usr/bin/python3 -I sin_motor_proxy.py 8090 8088
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

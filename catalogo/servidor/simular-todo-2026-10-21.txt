@@ -1,0 +1,2 @@
+﻿09:36:23  Empieza Simular todo: pestaña a, 1 a la vez, solo a:habilidad,a:pagar-vida,a:descartar,a:tipo,a:opcionales,a:ganar-vida,a:sobrevive
+09:37:23  Parado desde el panel en: 1/7 listas · 47 s por escena · faltan unos 4 min 43 s · ahora: Ganar vida (motor 1)

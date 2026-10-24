@@ -1,0 +1,17 @@
+[Unit]
+Description=Claude Code con control remoto (para manejar la Pi desde el móvil o claude.ai)
+After=network-online.target
+Wants=network-online.target
+# Starts only after the one-time sign-in (LEEME.md, paso 3: login, accept Remote Control and trust /srv/claude-mtg once by hand)
+ConditionPathExists=/home/__USUARIO__/.claude/.credentials.json
+
+[Service]
+User=__USUARIO__
+WorkingDirectory=/srv/claude-mtg
+Environment=HOME=/home/__USUARIO__ PATH=/home/__USUARIO__/.local/bin:/usr/local/bin:/usr/bin:/bin
+ExecStart=/home/__USUARIO__/.local/bin/claude remote-control --name "Raspberry MTG"
+Restart=always
+RestartSec=30
+
+[Install]
+WantedBy=multi-user.target

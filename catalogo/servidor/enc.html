@@ -1,0 +1,145 @@
+﻿<!doctype html>
+<meta charset="utf-8">
+<title>enc</title>
+<body style="margin:0;background:#000">
+<canvas id="c"></canvas>
+<script>
+// Turns the frames the catalog server captured (servidor/tmp/<job>/<screen>/<i>.jpg + t.json) into a webm and posts it
+// to /guardar for each output path. The server reads document.title: OK or ERR.
+// Fast path: WebCodecs encodes every frame as fast as the PC can, with its real time stamp, and a small WebM writer
+// below puts them in a file with its length and seek points (so the catalog's timeline can jump anywhere).
+// Old browsers: the canvas is replayed in real time into MediaRecorder.
+// Luis 21/10: while the motor plays the next scene, its browser freezes the hidden encoder tabs (only the front one
+// finished). Things a browser does not freeze: a held Web Lock, a live WebRTC connection, a page playing sound.
+const keepAwake = (() => { const k = [];
+  try { navigator.locks.request('enc-' + Math.random(), () => new Promise(() => {})); } catch (e) {}
+  try { const a = new RTCPeerConnection(), b = new RTCPeerConnection(); a.onicecandidate = (e) => e.candidate && b.addIceCandidate(e.candidate).catch(() => {});
+    b.onicecandidate = (e) => e.candidate && a.addIceCandidate(e.candidate).catch(() => {}); const ch = a.createDataChannel('k');
+    ch.onopen = () => setInterval(() => { try { ch.send('.'); } catch (e) {} }, 1000);
+    a.createOffer().then((o) => a.setLocalDescription(o)).then(() => b.setRemoteDescription(a.localDescription)).then(() => b.createAnswer())
+      .then((o) => b.setLocalDescription(o)).then(() => a.setRemoteDescription(b.localDescription)).catch(() => {}); k.push(a, b); } catch (e) {}
+  try { const ac = new AudioContext(), o = ac.createOscillator(), g = ac.createGain(); g.gain.value = 0.0001; o.connect(g).connect(ac.destination); o.start(); ac.resume().catch(() => {}); k.push(ac); } catch (e) {}
+  return k; })();
+const why = [], msg = (e) => e && (e.message || (e.type && e.type + ' ' + ((e.target && e.target.src) || '')) || String(e)) || String(e);
+(async () => {
+  try {
+    const q = new URLSearchParams(location.search), d = q.get('d'), outs = (q.get('out') || '').split(',').filter(Boolean);
+    let ts; try { ts = await (await fetch('/' + d + '/t.json', { cache: 'no-store' })).json(); } catch (e) { throw new Error('fotogramas ' + e.message); }
+    // In a worker first (Luis 21/10): a hidden tab's encoder stops after a few frames; a worker's keeps going
+    const blob = (typeof VideoEncoder !== 'undefined' && ((await inWorker(d, ts).catch((e) => { why.push('worker: ' + msg(e)); return null; })) || await fast(d, ts).catch((e) => { why.push('fast: ' + msg(e)); return null; }))) || await slow(d, ts);
+    // Retry a failed save (the server may be busy writing the file): say which step failed if it never works
+    for (const o of outs) {
+      let err = '';
+      for (let k = 0; k < 4; k++) {
+        try { const r = await fetch('/guardar?f=' + encodeURIComponent(o), { method: 'POST', body: blob }); if (r.ok) { err = ''; break; } err = 'guardar ' + r.status + ' ' + (await r.text()).slice(0, 200); }
+        catch (e) { err = 'guardar ' + e.message; }
+        await new Promise((r) => setTimeout(r, 1500));
+      }
+      if (err) throw new Error(err);
+    }
+    document.title = 'OK';
+  } catch (e) { document.title = 'ERR ' + msg(e) + (why.length ? ' (' + why.join('; ') + ')' : ''); }
+})();
+
+const bitmap = async (d, i) => createImageBitmap(await (await fetch((self.ORIGIN || '') + '/' + d + '/' + i + '.jpg')).blob());
+
+// the same fast() and webm(), run in a dedicated worker; null when the worker cannot encode (then the page tries itself)
+function inWorker(d, ts) {
+  const src = 'const bitmap = ' + bitmap.toString() + ';\n' + fast.toString() + '\n' + webm.toString() + '\n'
+    + 'onmessage = async (m) => { self.ORIGIN = m.data.origin; try { postMessage({ blob: await fast(m.data.d, m.data.ts) }); } catch (e) { postMessage({ err: String(e && e.message || e) }); } };';
+  const url = URL.createObjectURL(new Blob([src], { type: 'text/javascript' }));
+  return new Promise((ok, ko) => {
+    const w = new Worker(url);
+    w.onmessage = (m) => { w.terminate(); URL.revokeObjectURL(url); if (m.data.err) ko(new Error(m.data.err)); else ok(m.data.blob); };
+    w.onerror = (e) => { w.terminate(); URL.revokeObjectURL(url); ko(new Error(e.message || 'worker')); };
+    w.postMessage({ origin: location.origin, d, ts });
+  });
+}
+
+async function fast(d, ts) {
+  const first = await bitmap(d, 0), W = first.width & ~1, H = first.height & ~1;
+  // Sharp text matters more than file size: constant quality (quantizer) when the browser has it, else a high bit rate
+  const rate = Math.max(4000000, Math.round(W * H * 30 * 0.1));
+  let codec = null, cfg = null;
+  for (const c of ['vp8', 'vp09.00.40.08', 'vp09.00.10.08']) { // VP8 first: Luis's Brave shows VP9 stuck on its first frame (19/10)
+    for (const extra of [{ bitrateMode: 'quantizer' }, { bitrate: rate }]) {
+      const want = { codec: c, width: W, height: H, framerate: 30, latencyMode: 'quality', ...extra };
+      const s = await VideoEncoder.isConfigSupported(want).catch(() => null);
+      if (s && s.supported) { codec = c; cfg = want; break; }
+    }
+    if (codec) break;
+  }
+  if (!codec) return null;
+  const qopt = cfg.bitrateMode === 'quantizer' ? (codec.startsWith('vp8') ? { vp8: { quantizer: 14 } } : { vp9: { quantizer: 22 } }) : {};
+  const chunks = []; let bad = null;
+  const enc = new VideoEncoder({ output: (ch) => { const b = new Uint8Array(ch.byteLength); ch.copyTo(b); chunks.push({ t: Math.round(ch.timestamp / 1000), key: ch.type === 'key', b }); }, error: (e) => { bad = e; } });
+  enc.configure(cfg);
+  let lastKey = -1e9, bm = first, n = ts.length;
+  // the next picture loads while this one encodes. Luis 21/10: the last picture of a screen can be cut short
+  // ("could not be decoded"): that one is left out instead of losing the whole video
+  for (let i = 0; i < n; i++) {
+    const next = i + 1 < n ? bitmap(d, i + 1).catch((e) => { if (i + 1 === n - 1) return null; throw e; }) : null;
+    const t = ts[i] - ts[0];
+    const f = new VideoFrame(bm, { timestamp: t * 1000 });
+    const key = t - lastKey >= 1000; if (key) lastKey = t; // a seek point every second
+    enc.encode(f, { keyFrame: key, ...qopt }); f.close(); bm.close();
+    if (bad) throw bad;
+    while (enc.encodeQueueSize > 6) await new Promise((r) => setTimeout(r, 5));
+    if (next) { bm = await next; if (!bm) { n = i + 1; break; } }
+  }
+  await enc.flush(); enc.close();
+  if (bad) throw bad;
+  if (!chunks.length) return null;
+  const dur = (ts[n - 1] - ts[0]) + 100;
+  return webm(chunks, W, H, codec.startsWith('vp8') ? 'V_VP8' : 'V_VP9', dur);
+}
+
+// ---- a minimal WebM (Matroska) writer: one video track, clusters that start at key frames, cues to seek
+function webm(chunks, W, H, codecId, dur) {
+  const enc = new TextEncoder();
+  const vint = (n) => { // element size, 8 bytes
+    const b = new Uint8Array(8); b[0] = 0x01; let x = n; for (let i = 7; i >= 1; i--) { b[i] = x & 0xff; x = Math.floor(x / 256); } return b; };
+  const uint = (n) => { const a = []; do { a.unshift(n & 0xff); n = Math.floor(n / 256); } while (n > 0); return new Uint8Array(a); };
+  const id = (h) => new Uint8Array(h.match(/../g).map((x) => parseInt(x, 16)));
+  const cat = (parts) => { const len = parts.reduce((s, p) => s + p.length, 0), o = new Uint8Array(len); let k = 0; for (const p of parts) { o.set(p, k); k += p.length; } return o; };
+  const el = (h, body) => { const b = Array.isArray(body) ? cat(body) : body; return cat([id(h), vint(b.length), b]); };
+  const u = (h, n) => el(h, uint(n)), s = (h, t) => el(h, enc.encode(t));
+  const f64 = (h, x) => { const b = new Uint8Array(8); new DataView(b.buffer).setFloat64(0, x); return el(h, b); };
+  const header = el('1A45DFA3', [u('4286', 1), u('42F7', 1), u('42F2', 4), u('42F3', 8), s('4282', 'webm'), u('4287', 4), u('4285', 2)]);
+  const info = el('1549A966', [u('2AD7B1', 1000000), s('4D80', 'catalogo'), s('5741', 'catalogo'), f64('4489', dur)]);
+  const tracks = el('1654AE6B', [el('AE', [u('D7', 1), u('73C5', 1), u('83', 1), s('86', codecId), u('9C', 0), el('E0', [u('B0', W), u('BA', H)])])]);
+  // clusters: a new one at every key frame (and before the 16-bit block time runs out)
+  const clusters = [], cues = []; let pos = info.length + tracks.length, cur = null;
+  const close = () => { if (!cur) return; const c = el('1F43B675', [u('E7', cur.t), ...cur.blocks]); clusters.push(c); cues.push([cur.t, pos]); pos += c.length; cur = null; };
+  for (const ch of chunks) {
+    if (!cur || ch.key || ch.t - cur.t > 30000) { close(); cur = { t: ch.t, blocks: [] }; }
+    const rel = ch.t - cur.t, hd = new Uint8Array(4); hd[0] = 0x81; hd[1] = (rel >> 8) & 0xff; hd[2] = rel & 0xff; hd[3] = ch.key ? 0x80 : 0;
+    cur.blocks.push(el('A3', cat([hd, ch.b])));
+  }
+  close();
+  const cueEl = el('1C53BB6B', cues.map(([t, p]) => el('BB', [u('B3', t), el('B7', [u('F7', 1), u('F1', p)])])));
+  const body = cat([info, tracks, ...clusters, cueEl]);
+  return new Blob([header, el('18538067', body)], { type: 'video/webm' });
+}
+
+async function slow(d, ts) {
+  const imgs = await Promise.all(ts.map((_, i) => new Promise((ok, ko) => { const im = new Image(); im.onload = () => ok(im); im.onerror = ko; im.src = '/' + d + '/' + i + '.jpg'; })));
+  const c = document.getElementById('c'), g = c.getContext('2d');
+  c.width = imgs[0].naturalWidth; c.height = imgs[0].naturalHeight;
+  g.drawImage(imgs[0], 0, 0);
+  const type = MediaRecorder.isTypeSupported('video/webm;codecs=vp8') ? 'video/webm;codecs=vp8' : 'video/webm';
+  const mr = new MediaRecorder(c.captureStream(30), { mimeType: type, videoBitsPerSecond: 12000000 });
+  const parts = []; mr.ondataavailable = (e) => e.data.size && parts.push(e.data);
+  const stopped = new Promise((r) => { mr.onstop = r; });
+  mr.start(1000);
+  const t0 = performance.now();
+  for (let i = 0; i < imgs.length; i++) {
+    const at = ts[i] - ts[0], now = performance.now() - t0;
+    if (at > now) await new Promise((r) => setTimeout(r, at - now));
+    g.drawImage(imgs[i], 0, 0, c.width, c.height);
+  }
+  await new Promise((r) => setTimeout(r, 300));
+  mr.stop(); await stopped;
+  return new Blob(parts, { type: 'video/webm' });
+}
+</script>

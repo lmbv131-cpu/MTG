@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Ganar o perder</title>
+<style>
+/* Proposed animations for the cards that win or lose the game (Luis 19/10 07:34).
+   One stage, loops. Luis's rules: only transform/opacity are animated, nothing leaves the stage, no scrollbars. */
+:root { --bg: #0B0F14; --felt: #14301F; --felt2: #0F2618; --fg: #E9E3D5; --muted: #A9B1BE; --gold: #F0CF8E; --red: #E5626A; --green: #63C283; --blue: #7FB2F0; }
+html, body { margin: 0; height: 100%; background: var(--bg); color: var(--fg); font: 15px system-ui, sans-serif; overflow: hidden; }
+#st { position: absolute; inset: 0; margin: auto; width: min(100vw, 177.78vh); height: min(56.25vw, 100vh); overflow: hidden; contain: strict;
+  background: radial-gradient(ellipse at center, var(--felt) 0%, var(--felt2) 70%, #08130C 100%); }
+.seat { position: absolute; width: 22%; height: 15%; border-radius: 12px; background: rgba(0,0,0,.35); border: 2px solid rgba(255,255,255,.12); display: grid; place-items: center; text-align: center; }
+.seat b { display: block; font-size: 2.2vmin; letter-spacing: .02em; }
+.seat .life { display: block; font: 700 4.6vmin/1 Georgia, serif; color: var(--fg); }
+.seat .life.neg { color: var(--red); }
+#Luis { left: 39%; bottom: 3%; } #Pablo { left: 2%; top: 42%; } #Malaguita { left: 39%; top: 3%; } #Calero { right: 2%; top: 42%; }
+.dim { position: absolute; inset: 0; border-radius: 10px; background: #000; opacity: 0; }
+.skull { position: absolute; inset: 0; display: grid; place-items: center; font-size: 7vmin; color: var(--red); opacity: 0; transform: scale(.4); }
+.card { position: absolute; width: 13%; aspect-ratio: 63 / 88; left: 43.5%; top: 31%; border-radius: 6%; overflow: hidden; opacity: 0;
+  background: linear-gradient(160deg, #3A3326, #1E1A13); border: 2px solid #000; box-shadow: 0 1vmin 3vmin rgba(0,0,0,.6); }
+.card img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.card .nm { position: absolute; left: 6%; right: 6%; top: 6%; font: 600 1.6vmin Georgia, serif; color: var(--fg); }
+.card img + .nm { display: none; }
+.glow { position: absolute; left: 50%; top: 50%; width: 46vmin; height: 46vmin; margin: -23vmin 0 0 -23vmin; border-radius: 50%; opacity: 0;
+  background: radial-gradient(circle, rgba(240,207,142,.55) 0%, rgba(240,207,142,0) 65%); }
+.tag { position: absolute; left: 50%; top: 73%; transform: translateX(-50%); white-space: nowrap; padding: .6vmin 1.6vmin; border-radius: 99px; background: rgba(0,0,0,.7);
+  border: 1px solid var(--gold); color: var(--gold); font: 600 2.4vmin system-ui; opacity: 0; }
+.banner { position: absolute; left: 0; right: 0; top: 40%; text-align: center; font: 700 7vmin Georgia, serif; color: var(--gold); text-shadow: 0 .6vmin 2vmin #000; opacity: 0; transform: scale(.85); }
+.ring { position: absolute; width: 16vmin; height: 16vmin; border-radius: 50%; border: .8vmin solid var(--blue); opacity: 0; transform: scale(.2); }
+.shield { position: absolute; width: 30%; height: 34%; left: 35%; bottom: -2%; border-radius: 50% 50% 46% 46%; border: .7vmin solid var(--blue); background: rgba(127,178,240,.12); opacity: 0; transform: scale(.6); }
+.bolt { position: absolute; left: 49%; top: 18%; width: 2vmin; height: 12vmin; border-radius: 99px; background: linear-gradient(var(--red), #fff); opacity: 0; }
+.thread { position: absolute; left: 24%; top: 50%; width: 30%; height: .6vmin; transform-origin: 0 50%; background: linear-gradient(90deg, var(--red), var(--gold)); opacity: 0; transform: scaleX(0); }
+.half { position: absolute; inset: 0; }
+.chip { position: absolute; padding: .4vmin 1.2vmin; border-radius: 99px; background: #000c; border: 1px solid var(--green); color: var(--green); font: 700 2.6vmin system-ui; opacity: 0; }
+.cap { position: absolute; left: 2%; bottom: 2%; color: var(--muted); font-size: 1.8vmin; max-width: 34%; }
+@media (prefers-reduced-motion: reduce) { * { animation-duration: .01s !important; animation-iteration-count: 1 !important; } }
+</style></head><body>
+<div id="st"></div>
+<script>
+// One scene per group of fincartas.js (ids match). Each lasts T ms and starts again.
+const T = 6000;
+const G = {
+  'gana-condicion': { card: 'Felidar Sovereign', cap: 'Ganas si cumples algo: la carta se ilumina con su condición y luego la victoria.' },
+  'gana-biblioteca': { card: "Thassa's Oracle", cap: 'Ganas con la biblioteca vacía: la biblioteca se abre como un portal y sale la carta.' },
+  'otro-pierde': { card: 'Door to Nothingness', cap: 'Haces que otro pierda: la carta golpea al jugador y el eliminado lleva su nombre.' },
+  'tu-pierdes': { card: 'Pact of Negation', cap: 'Pierdes por tu propia carta: se gira hacia su dueño, se rompe y dice qué carta fue.' },
+  'no-pierdes': { card: 'Platinum Angel', cap: 'No puedes perder: un escudo sobre el jugador; el golpe rebota con el nombre de la carta.' },
+  'cero-vidas': { card: 'Phyrexian Unlife', cap: 'Sigues con 0 vidas o menos: el contador baja a negativo y la marca de la carta te mantiene.' },
+  'en-vez': { card: "Lich's Mirror", cap: 'En vez de perder: empieza el eliminado, se corta y la carta salta delante y te salva.' },
+  'cuando-pierde': { card: 'Blood Tyrant', cap: 'Cuando alguien pierde: tras el eliminado, un hilo va del jugador que cae a la carta.' },
+};
+const id = (location.hash || '#gana-condicion').slice(1), g = G[id] || G['gana-condicion'];
+const st = document.getElementById('st');
+const img = (n) => 'https://api.scryfall.com/cards/named?format=image&version=normal&exact=' + encodeURIComponent(n);
+const seat = (n, life) => `<div class="seat" id="${n}"><div><b>${n}</b><span class="life">${life}</span></div><div class="dim"></div><div class="skull">✕</div></div>`;
+const card = (n, c = '') => `<div class="card${c}"><img alt="" src="${img(n)}" onerror="this.remove()"><span class="nm">${n}</span></div>`;
+// Web Animations API with transform/opacity only; every scene: list of [selector, keyframes, start ms, duration ms]
+const A = (sel, kf, at, dur, opt = {}) => [sel, kf, at, dur, opt];
+const fade = (a, b) => [{ opacity: a }, { opacity: b }];
+const SC = {
+  'gana-condicion': () => [
+    A('.main', [{ opacity: 0, transform: 'translate(0, 140%) scale(.6)' }, { opacity: 1, transform: 'translate(0, 0) scale(1.15)' }], 200, 700),
+    A('.glow', [{ opacity: 0, transform: 'scale(.6)' }, { opacity: 1, transform: 'scale(1)' }, { opacity: .6, transform: 'scale(1.08)' }, { opacity: 1, transform: 'scale(1)' }], 900, 1600),
+    A('.tag', [{ opacity: 0, transform: 'translate(-50%, 1vmin) scale(.8)' }, { opacity: 1, transform: 'translate(-50%, 0) scale(1)' }], 1100, 400),
+    A('#Pablo .dim, #Malaguita .dim, #Calero .dim', fade(0, .6), 2800, 500),
+    A('.banner', [{ opacity: 0, transform: 'scale(.85)' }, { opacity: 1, transform: 'scale(1)' }], 3100, 500),
+  ],
+  'gana-biblioteca': () => [
+    A('.ring', [{ opacity: 0, transform: 'scale(.2) rotate(0deg)' }, { opacity: 1, transform: 'scale(1.4) rotate(180deg)' }, { opacity: .8, transform: 'scale(1.2) rotate(360deg)' }], 300, 1500),
+    A('.main', [{ opacity: 0, transform: 'translate(0, 160%) scale(.3)' }, { opacity: 1, transform: 'translate(0, 0) scale(1.15)' }], 1300, 900),
+    A('.tag', fade(0, 1), 2000, 400),
+    A('#Pablo .dim, #Malaguita .dim, #Calero .dim', fade(0, .6), 3000, 500),
+    A('.banner', [{ opacity: 0, transform: 'scale(.85)' }, { opacity: 1, transform: 'scale(1)' }], 3300, 500),
+  ],
+  'otro-pierde': () => [
+    A('.main', [{ opacity: 0, transform: 'scale(.6)' }, { opacity: 1, transform: 'scale(1.1)' }], 200, 500),
+    A('.main', [{ transform: 'scale(1.1)' }, { transform: 'translate(-220%, 40%) rotate(-12deg) scale(.9)' }], 1200, 450, { fill: 'forwards' }),
+    A('#Pablo', [{ transform: 'translateX(0)' }, { transform: 'translateX(-1.2vmin)' }, { transform: 'translateX(1vmin)' }, { transform: 'translateX(0)' }], 1650, 300),
+    A('#Pablo .dim', fade(0, .65), 1800, 400),
+    A('#Pablo .skull', [{ opacity: 0, transform: 'scale(.4)' }, { opacity: 1, transform: 'scale(1)' }], 1850, 350),
+    A('.tag', fade(0, 1), 2200, 400),
+  ],
+  'tu-pierdes': () => [
+    A('.main', [{ opacity: 0, transform: 'scale(.6)' }, { opacity: 1, transform: 'scale(1.1)' }], 200, 500),
+    A('.main', [{ transform: 'scale(1.1)' }, { transform: 'translate(0, 60%) rotate(180deg) scale(1)' }], 1200, 600, { fill: 'forwards' }),
+    A('.main', [{ opacity: 1 }, { opacity: 0 }], 2300, 300, { fill: 'forwards' }),
+    A('.shard.l', [{ opacity: 0, transform: 'translate(0,0) rotate(0)' }, { opacity: 1, transform: 'translate(-4vmin, 3vmin) rotate(-25deg)' }, { opacity: 0, transform: 'translate(-7vmin, 9vmin) rotate(-40deg)' }], 2300, 900),
+    A('.shard.r', [{ opacity: 0, transform: 'translate(0,0) rotate(0)' }, { opacity: 1, transform: 'translate(4vmin, 3vmin) rotate(25deg)' }, { opacity: 0, transform: 'translate(7vmin, 9vmin) rotate(40deg)' }], 2300, 900),
+    A('#Luis .dim', fade(0, .65), 2600, 400),
+    A('#Luis .skull', [{ opacity: 0, transform: 'scale(.4)' }, { opacity: 1, transform: 'scale(1)' }], 2650, 350),
+    A('.tag', fade(0, 1), 2900, 400),
+  ],
+  'no-pierdes': () => [
+    A('.main', [{ opacity: 0, transform: 'translate(0, 60%) scale(.5)' }, { opacity: 1, transform: 'translate(0, 60%) scale(.75)' }], 200, 500),
+    A('.shield', [{ opacity: 0, transform: 'scale(.6)' }, { opacity: 1, transform: 'scale(1)' }], 600, 500),
+    A('.bolt', [{ opacity: 0, transform: 'translateY(0)' }, { opacity: 1, transform: 'translateY(22vmin)' }, { opacity: 1, transform: 'translateY(32vmin)' }], 1500, 500),
+    A('.bolt', [{ opacity: 1, transform: 'translateY(32vmin) rotate(0)' }, { opacity: 0, transform: 'translate(14vmin, 6vmin) rotate(70deg)' }], 2000, 450),
+    A('.shield', [{ transform: 'scale(1)', opacity: 1 }, { transform: 'scale(1.08)', opacity: .7 }, { transform: 'scale(1)', opacity: 1 }], 2000, 400),
+    A('.tag', fade(0, 1), 2200, 400),
+  ],
+  'cero-vidas': () => [
+    A('.main', [{ opacity: 0, transform: 'translate(0, 60%) scale(.5)' }, { opacity: 1, transform: 'translate(-150%, 60%) scale(.7)' }], 200, 600),
+    A('#Luis .life', [{ transform: 'scale(1)' }, { transform: 'scale(1.25)' }, { transform: 'scale(1)' }], 1300, 300, { life: '0' }),
+    A('#Luis .life', [{ transform: 'scale(1)' }, { transform: 'scale(1.25)' }, { transform: 'scale(1)' }], 2200, 300, { life: '-4' }),
+    A('.chip', [{ opacity: 0, transform: 'translateY(1vmin)' }, { opacity: 1, transform: 'translateY(0)' }], 2500, 400),
+    A('.tag', fade(0, 1), 2700, 400),
+  ],
+  'en-vez': () => [
+    A('#Luis .dim', [{ opacity: 0 }, { opacity: .65 }, { opacity: .65 }, { opacity: 0 }], 400, 2000),
+    A('#Luis .skull', [{ opacity: 0, transform: 'scale(.4)' }, { opacity: .9, transform: 'scale(.8)' }, { opacity: 0, transform: 'scale(1.3)' }], 500, 1300),
+    A('.main', [{ opacity: 0, transform: 'translate(0, 70%) scale(.5)' }, { opacity: 1, transform: 'translate(0, 20%) scale(1.15)' }], 1300, 450),
+    A('#Luis .life', [{ transform: 'scale(1)' }, { transform: 'scale(1.3)' }, { transform: 'scale(1)' }], 2100, 350, { life: '20' }),
+    A('.tag', fade(0, 1), 2300, 400),
+  ],
+  'cuando-pierde': () => [
+    A('#Pablo .dim', fade(0, .65), 400, 400),
+    A('#Pablo .skull', [{ opacity: 0, transform: 'scale(.4)' }, { opacity: 1, transform: 'scale(1)' }], 450, 350),
+    A('.main', [{ opacity: 0, transform: 'scale(.5)' }, { opacity: 1, transform: 'scale(.95)' }], 900, 450),
+    A('.thread', [{ opacity: 1, transform: 'scaleX(0)' }, { opacity: 1, transform: 'scaleX(1)' }], 1400, 600),
+    A('.main', [{ transform: 'scale(.95)' }, { transform: 'scale(1.08)' }, { transform: 'scale(.95)' }], 2000, 400),
+    A('.chip', [{ opacity: 0, transform: 'translateY(1vmin)' }, { opacity: 1, transform: 'translateY(0)' }], 2200, 400),
+    A('.tag', fade(0, 1), 2400, 400),
+  ],
+};
+const TAG = { 'gana-condicion': '40 vidas o más ✓', 'gana-biblioteca': 'Biblioteca vacía → ganas', 'otro-pierde': 'Pablo eliminado por ' + g.card, 'tu-pierdes': 'Luis perdió por ' + g.card,
+  'no-pierdes': g.card + ': Luis no puede perder', 'cero-vidas': 'Sigue jugando con ' + g.card, 'en-vez': g.card + ': en vez de perder', 'cuando-pierde': g.card + ' se dispara' };
+const LIFE = { 'gana-condicion': 41, 'cero-vidas': 3, 'en-vez': 0 };
+let anims = [];
+function build() {
+  const banner = id.startsWith('gana') ? '<div class="banner">Ganó Luis</div>' : '';
+  st.innerHTML = seat('Malaguita', 18) + seat('Pablo', id === 'otro-pierde' || id === 'cuando-pierde' ? 6 : 22) + seat('Calero', 15) + seat('Luis', LIFE[id] ?? 24)
+    + '<div class="glow"></div>' + (id === 'gana-biblioteca' ? '<div class="ring" style="left:calc(50% - 8vmin);top:calc(50% - 8vmin)"></div>' : '')
+    + (id === 'no-pierdes' ? '<div class="shield"></div><div class="bolt"></div>' : '') + (id === 'cuando-pierde' ? '<div class="thread"></div>' : '')
+    + card(g.card, ' main')
+    + (id === 'tu-pierdes' ? '<div class="card shard l" style="clip-path:polygon(0 0,55% 0,40% 100%,0 100%)">' + card(g.card).slice(18, -6) + '</div><div class="card shard r" style="clip-path:polygon(55% 0,100% 0,100% 100%,40% 100%)">' + card(g.card).slice(18, -6) + '</div>' : '')
+    + (id === 'cero-vidas' ? '<div class="chip" style="left:58%;bottom:9%">0 vidas: no pierdes</div>' : '') + (id === 'cuando-pierde' ? '<div class="chip" style="left:58%;top:62%">+1 contador</div>' : '')
+    + `<div class="tag">${TAG[id]}</div>` + banner + `<div class="cap">${g.cap}</div>`;
+}
+function play() {
+  anims.forEach((a) => a.cancel()); anims = [];
+  build(); const seen = new Set();
+  for (const [sel, kf, at, dur, opt] of SC[id] ? SC[id]() : []) {
+    for (const el of st.querySelectorAll(sel)) {
+      // an element's first animation holds its start picture; later ones only keep their end (so they don't hide the first)
+      const fill = opt.fill || (seen.has(el) ? 'forwards' : 'both'); seen.add(el);
+      anims.push(el.animate(kf, { duration: dur, delay: at, easing: 'cubic-bezier(.2,.8,.2,1)', fill }));
+      if (opt.life) setTimeout(() => { el.textContent = opt.life; el.classList.toggle('neg', +opt.life <= 0); }, at + dur / 2);
+    }
+  }
+  // the scene holds its last picture, then plays again
+  setTimeout(play, T);
+}
+play();
+addEventListener('hashchange', () => location.reload());
+</script>
+</body></html>

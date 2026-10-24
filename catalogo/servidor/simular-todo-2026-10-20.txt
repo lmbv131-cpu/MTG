@@ -1,0 +1,32 @@
+﻿===== 2026-10-21 Simular todo (sesión del PC) — versión p138 (instalar\VERSION.txt; Juego\ no tiene VERSION.txt)
+--- Acciones, intento 1 (01:54–02:53): Detenido en 37/49 en 58 min 50 s, 36 no salieron (solo salió Revelar cartas / a:mostrar)
+Motivo: de los 4 vídeos de cada escena solo terminaba el del "otro" (la última pestaña de enc.html abierta); las otras 3 se
+quedaban paradas a ~20 fotogramas hasta el límite de 10 min ("El vídeo tardó demasiado"). Jugar cada escena: 1-2 min.
+Veneno y Daño de comandante: "La escena no grabó nada". Atacar: "No se pudo hacer el vídeo: ERR undefined".
+Arreglo (solo servidor\enc.html, sin recompilar): la codificación WebCodecs va en un Worker; los errores dicen su causa.
+Copia del original: servidor\enc.orig-2026-10-21.html. Prueba: Lanzar, Robar y Descartar con sus 4 vídeos, ~2 min por fila
+(≈1 min jugando + ≈1 min guardando), VP8 1920x1080 / 1770x1230, se reproducen y se puede saltar.
+
+
+--- Acciones, intento 2 (03:21–04:19, 21/10)
+Con 1 escena por motor (4 a la vez) la CPU llegó al 100 % y 3 filas fallaron con «El vídeo tardó demasiado»: solo el vídeo otro salía a tiempo. Detenido en 5/49.
+index.html: cuantos devuelve Math.min(2, motores); copia en index.orig-2026-10-21.html. Relanzado a las 03:32 con 2 a la vez.
+A las 03:55 volvieron los fallos porque en el PC corría otra tanda (pruebas\tanda3, unas 7 javas, CPU 100 %). Desde las 03:57 va de 1 en 1, cambiado solo en la página abierta.
+Resultado: Listo 49/49 en 46 min 15 s; 39 con sus 4 vídeos y 10 no salieron:
+  Activar una habilidad, Pagar vidas, Descartar, Elegir tipo de criatura, Costes opcionales: «The source image could not be decoded»
+    (la última imagen .jpg de una pantalla queda cortada; habría que saltarla en enc.html)
+  Ganar vida, Sobrevive: «El vídeo tardó demasiado» (2 a la vez con la CPU al 100 %)
+  Contadores de veneno, Daño de comandante, Daño de combate: «La escena no grabó nada» (fallo de la escena; los dos primeros ya fallaban en el intento 1)
+Pausa a las 04:20, a petición del hilo coordinador. Pendiente: Derrotas y victorias (18), Palabras clave (325), Ventanas (33 capturas) y repetir las 10 que fallaron.
+--- Derrotas y victorias (04:21–04:43, 21/10, sesión nueva; Edge sin ventana en CDP 9400)
+Antes de empezar, en enc.html: si la última imagen .jpg de una pantalla no se puede leer (queda cortada), se salta en vez de fallar. La copia anterior está en servidor\enc.worker-2026-10-21.html.
+Empezó con 2 a la vez; a las 04:24 la CPU llegó al 100 % (también corre pruebas\tanda3) y desde entonces va de 1 en 1, cambiado solo en la página abierta.
+Resultado: Listo 18/18 en 21 min 50 s; las 18 con sus 4 vídeos y ninguna fallida.
+
+--- Palabras clave (04:45–04:59, 21/10): Detenido en 28/325 a petición de Luis («lo dejamos para otro día»); las 28 con sus 4 vídeos, ninguna fallida. Pendientes: las 297 restantes.
+
+
+--- Ventanas (04:59–05:1x, 21/10): Listo 33/33, todas las capturas son nuevas, ninguna fallida.
+Catálogo corregido: acciones.js (7 filas de Derrotas a 'hecho', objetivo a 'hecho', mulligan con hoyMesa; copia acciones.orig-2026-10-21.js) e index.html (estado 'Solo ventana (no se anima en la mesa)').
+Pendiente: repetir las 10 fallidas de Acciones; regrabar Rendirse y Ganar cuando se corrijan sus escenas; Palabras clave 297 restantes; al final apagar Simular (sin-motor.txt), cerrar Edge 9400 y comprobar que no queda java --sim.
+

@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Simulación en vivo</title>
+<style>
+:root { --bg: #0f1218; --panel: #171c25; --line: #2a3140; --tx: #e8e3d6; --mut: #9aa3b2; --gold: #d9b45a; }
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; background: var(--bg); color: var(--tx); font: 14px/1.4 system-ui, sans-serif; }
+body { display: grid; grid-template-rows: auto 1fr; }
+header { display: flex; gap: 12px; align-items: baseline; padding: 10px 16px; border-bottom: 1px solid var(--line); }
+h1 { font-size: 17px; margin: 0; font-weight: 600; }
+#st { color: var(--gold); }
+#st.bad { color: #e07a6a; }
+main { display: grid; grid-template-rows: 3fr 2fr; gap: 8px; padding: 8px; min-height: 0; }
+.row { display: grid; gap: 8px; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); min-height: 0; }
+.v { position: relative; background: var(--panel); border: 1px solid var(--line); border-radius: 8px; overflow: hidden; display: grid; place-items: center; min-height: 0; }
+.v img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; display: block; }
+.v span { position: absolute; left: 8px; top: 6px; font-size: 12px; color: var(--mut); background: #0f1218cc; padding: 2px 6px; border-radius: 4px; z-index: 1; }
+.v .w { color: var(--mut); font-size: 13px; }
+@media (max-width: 700px) { main { grid-template-rows: auto auto; } .row { grid-auto-flow: row; } .v { aspect-ratio: 16 / 10; } }
+</style></head>
+<body>
+<header><h1 id="t">Simulación en vivo</h1><span id="st">Empezando…</span></header>
+<main id="m"></main>
+<script>
+// Live view of a catalog job (Luis 22:57): the catalog server plays the scene in a hidden browser; this page shows each screen as it plays.
+const q = new URLSearchParams(location.search), id = q.get('id'), ver = (q.get('ver') || 'mesa').split(',').filter(Boolean);
+document.getElementById('t').textContent = q.get('t') ? 'Simulación · ' + q.get('t') : 'Simulación en vivo';
+if (q.get('t')) document.title = 'Simulación · ' + q.get('t');
+const base = location.origin + (/^\/catalogo\//.test(location.pathname) ? '/catalogo/' : '/'); // also under the game's /catalogo (Pi)
+const tile = (p) => `<div class="v"><span>${p === 'mesa' ? 'Mesa proyectada' : 'Tableta de ' + p.replace(/[<&]/g, '')}</span><div class="w">Esperando la partida…</div><img alt="" hidden data-p="${p.replace(/["<&]/g, '')}"></div>`;
+const tabs = ver.filter((p) => p !== 'mesa');
+document.getElementById('m').innerHTML = (ver.includes('mesa') ? `<div class="row">${tile('mesa')}</div>` : '') + (tabs.length ? `<div class="row">${tabs.map(tile).join('')}</div>` : '');
+if (!ver.includes('mesa') || !tabs.length) document.getElementById('m').style.gridTemplateRows = '1fr';
+let done = false, fase = 'preparando';
+const MSG = { preparando: 'Preparando la partida (solo la primera vez)…', guardando: '' };
+function pull(img) {
+  if (done) return;
+  const w = img.previousElementSibling;
+  // the start of the game (sit down, mulligan, who goes first) is not shown; while saving, the last picture stays
+  if (fase !== 'jugando') { if (fase === 'preparando') { img.hidden = true; w.hidden = false; w.textContent = MSG.preparando; } setTimeout(() => pull(img), 500); return; }
+  fetch(base + 'auto-vivo?id=' + encodeURIComponent(id) + '&p=' + encodeURIComponent(img.dataset.p) + '&t=' + Date.now(), { cache: 'no-store' })
+    .then((r) => r.status === 200 ? r.blob() : null)
+    .then((b) => { if (b) { const u = URL.createObjectURL(b); const old = img.src; img.src = u; img.hidden = false; img.previousElementSibling.hidden = true; if (old.startsWith('blob:')) setTimeout(() => URL.revokeObjectURL(old), 2000); } })
+    .catch(() => {})
+    .finally(() => setTimeout(() => pull(img), 350));
+}
+document.querySelectorAll('img[data-p]').forEach(pull);
+async function estado() {
+  const st = document.getElementById('st');
+  try {
+    const j = await (await fetch(base + 'auto-estado?id=' + encodeURIComponent(id), { cache: 'no-store' })).json();
+    if (j.fin) {
+      fase = 'fin';
+      st.textContent = j.ok ? (j.hechos && j.hechos.some((h) => /\.webm$/.test(h)) ? 'Terminado: lo grabado ya está en el catálogo. Puedes cerrar esta pestaña.' : 'Terminado. Puedes cerrar esta pestaña.') : j.estado;
+      st.classList.toggle('bad', !j.ok);
+      setTimeout(() => { done = true; }, 3000);
+      return;
+    }
+    fase = j.fase || 'jugando';
+    st.textContent = j.estado;
+  } catch (e) { st.textContent = 'Sin conexión con el catálogo del PC.'; st.classList.add('bad'); }
+  setTimeout(estado, 1000);
+}
+if (id) estado(); else document.getElementById('st').textContent = 'Falta la tarea.';
+</script>
+</body></html>

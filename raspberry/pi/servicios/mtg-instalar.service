@@ -1,0 +1,15 @@
+[Unit]
+Description=MTG Local: instalación del primer arranque
+After=network-online.target
+Wants=network-online.target
+ConditionPathExists=!/opt/mtglocal/.instalado
+
+[Service]
+Type=oneshot
+ExecStart=/bin/bash /opt/mtglocal/instalador/instalar.sh
+Restart=on-failure
+RestartSec=60
+TimeoutStartSec=infinity
+
+[Install]
+WantedBy=multi-user.target

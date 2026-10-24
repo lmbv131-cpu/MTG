@@ -1,0 +1,12 @@
+[Unit]
+Description=MTG Local: dejar las imágenes de cartas en memoria para servirlas sin leer la tarjeta
+After=mtglocal.service
+
+[Service]
+Type=oneshot
+Nice=19
+IOSchedulingClass=idle
+ExecStart=/usr/bin/vmtouch -q -t /opt/mtglocal/juego/cache
+
+[Install]
+WantedBy=multi-user.target

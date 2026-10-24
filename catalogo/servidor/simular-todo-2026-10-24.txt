@@ -1,0 +1,24 @@
+﻿02:09:57  Empieza Simular todo: pestaña a, 2 a la vez, solo a:habilidad,a:pagar-vida,a:descartar,a:tipo,a:opcionales,a:ganar-vida,a:sobrevive,a:veneno,a:comandante,a:danio-combate
+02:09:57  Empieza Simular todo: pestaña fin, 1 a la vez, solo a:ganar,a:rendirse
+02:11:57  Fin: Listo: 2/2 en 1 min 51 s · todos los vídeos son nuevos
+02:11:57  Fin: Listo: 2/2 en 1 min 51 s · todos los vídeos son nuevos
+02:12:11  Empieza Simular todo: pestaña k, 1 a la vez, solo las pendientes
+02:12:11  Empieza Simular todo: pestaña a, 2 a la vez, solo a:habilidad,a:pagar-vida,a:descartar,a:tipo,a:opcionales,a:ganar-vida,a:sobrevive,a:veneno,a:comandante,a:danio-combate
+02:14:01  Fin: Listo: 2/2 en 1 min 48 s · todos los vídeos son nuevos
+02:14:02  Fin: Listo: 2/2 en 1 min 48 s · todos los vídeos son nuevos
+02:14:07  Empieza Simular todo: pestaña k, 1 a la vez, solo las pendientes
+02:14:07  Empieza Simular todo: pestaña a, 2 a la vez, solo a:habilidad,a:pagar-vida,a:descartar,a:tipo,a:opcionales,a:ganar-vida,a:sobrevive,a:veneno,a:comandante,a:danio-combate
+03:08:50  Fin: Listo: 100/100 en 54 min 36 s · 1 no salieron (pasa el ratón para ver cuáles) | Unir fuerzas: No se pudo hacer el vídeo: ERR error http://127.0.0.1:8088/servidor/tmp/95/Luis/689.jpg (worker: The source image could not be decoded.; fast: The source image could not be decoded.)
+03:08:50  Fin: Listo: 100/100 en 54 min 36 s · 1 no salieron (pasa el ratón para ver cuáles) | Unir fuerzas: No se pudo hacer el vídeo: ERR error http://127.0.0.1:8088/servidor/tmp/95/Luis/689.jpg (worker: The source image could not be decoded.; fast: The source image could not be decoded.)
+12:28:30  Empieza Simular todo: pestaña a, 2 a la vez, solo a:habilidad,a:pagar-vida,a:descartar,a:tipo,a:opcionales,a:ganar-vida,a:sobrevive,a:veneno,a:comandante,a:danio-combate
+12:34:20  Fin: Listo: 10/10 en 5 min 45 s · 1 no salieron (pasa el ratón para ver cuáles) | Daño de combate: No se pudo hacer el vídeo: ERR error http://127.0.0.1:8088/servidor/tmp/8/Luis/483.jpg (worker: The source image could not be decoded.; fast: The source image could not be decoded.)
+12:34:25  Empieza Simular todo: pestaña a, 2 a la vez, solo a:habilidad,a:pagar-vida,a:descartar,a:tipo,a:opcionales,a:ganar-vida,a:sobrevive,a:veneno,a:comandante,a:danio-combate
+12:34:48  Parado desde el panel en: 0/10 listas · de 1 en 1 (estás jugando) · ahora: Activar una habilidad (motor 1)
+12:34:56  Empieza Simular todo: pestaña fin, 1 a la vez, solo a:ganar,a:rendirse
+12:37:36  Fin: Listo: 2/2 en 2 min 35 s · todos los vídeos son nuevos
+12:37:41  Empieza Simular todo: pestaña fin, 1 a la vez, solo a:ganar,a:rendirse
+12:39:41  Fin: Listo: 2/2 en 1 min 51 s · todos los vídeos son nuevos
+12:39:47  Empieza Simular todo: pestaña fin, 1 a la vez, solo a:ganar,a:rendirse
+12:41:47  Fin: Listo: 2/2 en 1 min 52 s · todos los vídeos son nuevos
+12:41:51  Empieza Simular todo: pestaña fin, 1 a la vez, solo a:ganar,a:rendirse
+12:41:54  Parado desde el panel en: 0/2 listas

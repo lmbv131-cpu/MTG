@@ -1,0 +1,15 @@
+[Unit]
+Description=MTG Local: bajar las imágenes de cartas que falten (inglés y español), en segundo plano
+After=mtglocal.service network-online.target
+
+[Service]
+Type=oneshot
+User=mtg
+WorkingDirectory=/opt/mtglocal/juego
+Nice=15
+IOSchedulingClass=idle
+ExecStart=/opt/mtglocal/runtime/bin/java -Xmx1500m -Djava.awt.headless=true -Dfile.encoding=UTF-8 -cp mtglocal.jar mtglocal.DescargarTodo --engine /opt/mtglocal/juego/engine --log /opt/mtglocal/juego/cache/descarga-imagenes.log
+TimeoutStartSec=infinity
+
+[Install]
+WantedBy=multi-user.target

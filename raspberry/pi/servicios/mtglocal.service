@@ -1,0 +1,15 @@
+[Unit]
+Description=MTG Local (servidor de la mesa y las tabletas)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+User=mtg
+WorkingDirectory=/opt/mtglocal/juego
+EnvironmentFile=/opt/mtglocal/config.env
+ExecStart=/opt/mtglocal/runtime/bin/java -Xmx${XMX} -Djava.awt.headless=true -Dfile.encoding=UTF-8 -Dstdout.encoding=UTF-8 -jar mtglocal.jar --engine engine --port ${PUERTO} $URL_PUBLICA_ARG $CATALOGO_ARG
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

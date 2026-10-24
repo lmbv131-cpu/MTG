@@ -1,0 +1,9 @@
+[Unit]
+Description=MTG Local: comprobar actualizaciones cada minuto (GitHub cada 10 min o al llegar el webhook)
+
+[Timer]
+OnBootSec=2min
+OnUnitInactiveSec=1min
+
+[Install]
+WantedBy=timers.target

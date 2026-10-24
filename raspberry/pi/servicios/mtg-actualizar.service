@@ -1,0 +1,9 @@
+[Unit]
+Description=MTG Local: buscar y aplicar actualizaciones de GitHub (solo sin partida en curso)
+After=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=-/usr/local/bin/mtg-actualizar comprobar
+# the catalog and these scripts, from the same repo
+ExecStart=-/usr/local/bin/mtg-actualizar-privado
