@@ -27,6 +27,24 @@ const searchPick = (re, n = 1) => async (p) => { // real clicks: the cards ignor
 };
 // Luis 00:09: as fast as possible. The catalog server calls FAST() before each scene (the app's helpers are loaded by then):
 // the new board is used as soon as the game shows it, instead of a fixed 3.5 s wait
+// The table and the tablets of the sim, and a switch that makes them skip the animations of what changes on the board
+// (FX.table / FX.tablet draw nothing while it is on; whatever was queued or playing is dropped as it turns on)
+const fxPages = () => [globalThis.T && T.mesa, ...Object.values(globalThis.P || {})].filter(Boolean);
+const fxMute = (on) => Promise.all(fxPages().map((p) => p.evaluate((on) => {
+  if (!window.FX) return 0;
+  if (!FX.__mute) {
+    const t0 = FX.table, t1 = FX.tablet;
+    FX.table = function (a, b, ...r) { return window.__fxMute ? [] : t0.call(this, a, b, ...r); };
+    FX.tablet = function (a, b, ...r) { return window.__fxMute ? [] : t1.call(this, a, b, ...r); };
+    FX.__mute = 1;
+  }
+  window.__fxMute = !!on;
+  if (on && FX.stop) FX.stop();
+  // the table holds a new state back while cards are dying on screen: draw it now
+  try { if (typeof heldState !== 'undefined' && heldState) { clearTimeout(heldTimer); const h = heldState; heldState = null; drawState(h); } } catch (e) { /* not the table */ }
+  return 1;
+}, on).catch(() => 0)));
+globalThis.fxMute = fxMute;
 globalThis.FAST = () => {
   if (!globalThis.setBoard || globalThis.setBoard.__fast) return;
   const n = (v) => (v ? String(v).split(';').filter(Boolean).length : 0);
@@ -37,14 +55,28 @@ globalThis.FAST = () => {
     const txt = board(o), get = (k) => { const m = txt.match(new RegExp('^' + k + '=(.*)$', 'm')); return m ? n(m[1]) : 0; };
     const want = Object.entries(PID).map(([name, i]) => [name, get('p' + i + 'battlefield'), get('p' + i + 'hand')]), ph = o.phase || 'UPKEEP';
     const dx = globalThis.DEVX; globalThis.DEVX = null; // extra devState options of one scene (companion)
-    await send('Luis', { type: 'devState', text: txt, ...(dx || {}) });
-    const t = Date.now(); await wait(700);
-    while (Date.now() - t < 4000) {
-      const x = await st('Luis').catch(() => null);
-      const ok = x && x.state.phaseKey === ph && want.every(([name, bf, h]) => { const p = x.state.players.find((q) => q.name === name); return !p || (p.battlefield.length === bf && (p.handCount != null ? p.handCount : (p.hand || []).length) === h); });
-      if (ok) break; await wait(150);
-    }
-    await wait(400);
+    // Luis 2026-10-25 05:14 («de repente se mueren muchas cosas», animaciones atrasadas): the new board replaces every
+    // card, so each screen animated the whole old board dying and the new one coming in (about 10 s of animations).
+    // The clip began on top of them and the scene's own play waited behind them in the queue. The screens skip the
+    // animations of the board change: muted from before it is sent until every screen has drawn the new board.
+    await fxMute(true);
+    const fits = (state) => !!state && state.phaseKey === ph && want.every(([name, bf, h]) => { const p = (state.players || []).find((q) => q.name === name); return !p || (p.battlefield.length === bf && (p.handCount != null ? p.handCount : (p.hand || []).length) === h); });
+    try {
+      await send('Luis', { type: 'devState', text: txt, ...(dx || {}) });
+      const t = Date.now(); await wait(700);
+      while (Date.now() - t < 4000) {
+        const x = await st('Luis').catch(() => null);
+        if (x && fits(x.state)) break; await wait(150);
+      }
+      // every screen shows the new board (each one gets it on its own), then a breath for the last redraw
+      const want0 = want.map((w) => w.slice()), ph0 = ph;
+      await Promise.all(fxPages().map((p) => p.waitForFunction((a) => {
+        const s = typeof fxPrev !== 'undefined' && fxPrev && fxPrev.players ? fxPrev : (typeof last !== 'undefined' && last && last.state ? last.state : null);
+        return !!s && s.phaseKey === a.ph && a.want.every(([name, bf]) => { const p = (s.players || []).find((q) => q.name === name); return !p || p.battlefield.length === bf; });
+      }, { want: want0, ph: ph0 }, { timeout: 3000, polling: 100 }).catch(() => {})));
+      await wait(250);
+    } finally { await fxMute(false); }
+    await wait(150);
   };
   fast.__fast = true; globalThis.setBoard = fast;
   // A player with nothing left to do passes by himself and has no question open: the scene runner then waited 20 s

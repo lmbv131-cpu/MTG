@@ -49,8 +49,10 @@ public class Auto {
     final AtomicInteger next = new AtomicInteger(), done = new AtomicInteger(), bad = new AtomicInteger(), running = new AtomicInteger(), seguidos = new AtomicInteger();
     final List<String> fails = new CopyOnWriteArrayList<>(); final Map<String, Job> now = new ConcurrentHashMap<>();
     volatile boolean stop, activo = true; volatile long fin; volatile String motivo = "";
-    // window captures («Tomar todas las capturas», t = "w") go one at a time, as the page always did them
-    Todo(String t, List<Map<String, String>> items) { this.t = t; this.items = items; n = items.size(); max = t.equals("w") ? 1 : 2; }
+    final Set<String> hechos = ConcurrentHashMap.newKeySet(); // files the finished jobs of this run saved (img/fin.jpg…)
+    // Luis 2026-10-25 (fotos más rápidas): window captures («Tomar todas las capturas», t = "w") also go 2 at a time when
+    // the PC has room for 2 motors (one at a time while he plays, and on the Pi, as before)
+    Todo(String t, List<Map<String, String>> items) { this.t = t; this.items = t.equals("w") ? ordenVentanas(items) : items; n = items.size(); max = 2; }
     String json() {
       List<Object> ahora = new ArrayList<>();
       for (Map.Entry<String, Job> e : now.entrySet()) { Job j = e.getValue(); Map<String, Object> m = new LinkedHashMap<>(); m.put("titulo", e.getKey()); m.put("motor", j.lane == null ? 0 : j.lane.n + 1); m.put("guardando", j.saving); m.put("fase", j.fase); ahora.add(m); }
@@ -59,6 +61,17 @@ public class Auto {
       m.put("parando", stop && activo); m.put("motivo", motivo); m.put("aLaVez", Math.min(max, obj)); m.put("jugando", jugando); m.put("ahora", ahora); m.put("fallos", fails);
       return Json.str(m);
     }
+  }
+  // The windows that end the game go last: each one left the next window a new game to start (about a minute each;
+  // «La sala» was first, «Fin» and «Entrar» in the middle: 3 extra games). «La mesa al final» also takes «Fin» (the same
+  // ending on Luis's tablet) and «Entrar» → «La sala» share the room (in that order: «La sala» leaves everyone ready),
+  // so the whole list needs one extra game at most.
+  static final List<String> FINAL = List.of("mesa-fin", "fin", "entrar", "sala");
+  static List<Map<String, String>> ordenVentanas(List<Map<String, String>> items) {
+    List<Map<String, String>> out = new ArrayList<>(), tail = new ArrayList<>();
+    for (Map<String, String> q : items) (FINAL.contains(q.getOrDefault("ventana", "")) ? tail : out).add(q);
+    tail.sort(Comparator.comparingInt((q) -> FINAL.indexOf(q.get("ventana"))));
+    out.addAll(tail); return out;
   }
   static volatile Todo todo;
   static void todo(HttpExchange x) throws IOException {
@@ -89,7 +102,7 @@ public class Auto {
         if (td.running.get() < target) { td.running.incrementAndGet(); worker.submit(() -> todoLane(td)); }
         Thread.sleep(1000);
       }
-      while (td.running.get() > 0) Thread.sleep(1000);
+      while (td.running.get() > 0 || !td.now.isEmpty()) Thread.sleep(1000);
     } catch (InterruptedException e) { /* closing */ }
     td.activo = false; td.fin = System.currentTimeMillis();
     System.out.println("Simular todo: " + td.done.get() + "/" + td.n + (td.bad.get() > 0 ? ", " + td.bad.get() + " no salieron" : "") + (td.motivo.isEmpty() ? "" : " (" + td.motivo + ")"));
@@ -99,16 +112,27 @@ public class Auto {
       while (!td.stop) {
         int i = td.next.getAndIncrement(); if (i >= td.n) break;
         Map<String, String> q = new HashMap<>(td.items.get(i)); String title = q.getOrDefault("titulo", q.getOrDefault("clave", q.get("ventana"))); q.remove("titulo");
+        // a picture another window of this run already took (the «Fin» tablet comes with «La mesa al final»)
+        String pic = "captura".equals(q.get("tipo")) ? "img/" + q.get("ventana") + ".jpg" : null;
+        if (pic != null && q.get("ventana").equals("fin")) for (int k = 0; k < 2400 && td.now.values().stream().anyMatch((y) -> "mesa-fin".equals(y.q.get("ventana"))); k++) Thread.sleep(250);
+        if (pic != null && td.hechos.contains(pic)) { td.done.incrementAndGet(); continue; }
         Job j = new Job(seq.incrementAndGet(), q); jobs.put(j.id, j); td.now.put(title, j);
         run(j);
-        while (!j.fin) Thread.sleep(500); // its videos are still being saved
-        td.now.remove(title); td.done.incrementAndGet();
-        if (j.ok) td.seguidos.set(0);
-        else {
-          td.bad.incrementAndGet(); td.fails.add(title + ": " + j.estado);
-          // A game started (the door blocks the motors) or the motors broke: don't burn the whole list on failures
-          if (td.seguidos.incrementAndGet() >= 3) { td.stop = true; td.motivo = "Parado tras 3 fallos seguidos: " + j.estado; }
-        }
+        // Its videos are saved while this motor already plays the next scene (Luis 2026-10-25: faster videos; before,
+        // the list waited for every save, about as long as the clip itself). At most one save behind per motor, and only
+        // on a PC with cores to spare: on 4 cores (the Raspberry Pi) encoding next to the filming made the clips jerky.
+        worker.submit(() -> {
+          try { while (!j.fin) Thread.sleep(500); } catch (InterruptedException e) { /* closing */ }
+          td.now.remove(title); td.hechos.addAll(j.hechos); td.done.incrementAndGet();
+          if (j.ok) td.seguidos.set(0);
+          else {
+            td.bad.incrementAndGet(); td.fails.add(title + ": " + j.estado);
+            // A game started (the door blocks the motors) or the motors broke: don't burn the whole list on failures
+            if (td.seguidos.incrementAndGet() >= 3) { td.stop = true; td.motivo = "Parado tras 3 fallos seguidos: " + j.estado; }
+          }
+        });
+        int atras = Runtime.getRuntime().availableProcessors() >= 8 ? 1 : 0;
+        Lane jl = j.lane; for (int k = 0; jl != null && jl.saves.get() > atras && k < 1800; k++) Thread.sleep(500);
         if (td.running.get() > Math.min(td.max, objetivo())) break;
       }
     } catch (InterruptedException e) { /* closing */ } finally { td.running.decrementAndGet(); }
@@ -225,13 +249,13 @@ public class Auto {
   static Lane manual() {
     int t = objetivo();
     synchronized (LANES) {
-      if (lanes[0].simTabs() < 0) { lanes[0].dirty = true; return lanes[0]; } // older game: it can't say which tabs it has, so motor 1 as before
+      if (lanes[0].simTabs() < 0) { lanes[0].dirty = true; lanes[0].salaOk = false; return lanes[0]; } // older game: it can't say which tabs it has, so motor 1 as before
       Lane pick = null;
       for (int i = 0; i < t && pick == null; i++) { Lane l = lanes[i]; if (!l.busy && !l.aMano() && l.dirSession == null) pick = l; }
       for (int i = 0; i < t && pick == null; i++) { Lane l = lanes[i]; if (!l.busy && l.saves.get() == 0 && !l.aMano()) pick = l; }
       if (pick == null) return null;
       if (pick.dirSession != null) { Lane p = pick; worker.submit(() -> { synchronized (LANES) { if (p.busy) return; p.busy = true; } try { p.cerrar(false); } finally { synchronized (LANES) { p.busy = false; LANES.notifyAll(); } } }); }
-      pick.reservado = System.currentTimeMillis() + 90000; pick.dirty = true;
+      pick.reservado = System.currentTimeMillis() + 90000; pick.dirty = true; pick.salaOk = false;
       return pick;
     }
   }
@@ -257,6 +281,8 @@ public class Auto {
   static final String ALL = "mesa,Luis,Pablo,Malaguita,Calero,Albertito,Elena";
   // scenes that leave the room without a game: the next job boots a new one
   static final Set<String> LEAVE = Set.of("W.sala", "W.entrar", "W.fin", "W.mesa-fin");
+  // windows of the room itself: one right after another of them needs no new game (the room is already there)
+  static final Set<String> SALA = Set.of("W.sala", "W.entrar");
   // A scene where a player loses or concedes leaves that player out of the game: the next scene needs a new game
   static boolean endsGame(String e) { e = e.startsWith("SC.") ? e.substring(3) : e; return e.startsWith("a_fin-") || e.equals("a_rendirse") || e.equals("endgame"); }
 
@@ -266,7 +292,7 @@ public class Auto {
       l = acquire(j); j.lane = l;
       for (int attempt = 0; ; attempt++) {
         try { l.play(j); break; }
-        catch (Exception e) { l.dirty = true; if (attempt >= 1 || j.fin) throw e; j.pasos.add("Reintento: " + e.getMessage()); }
+        catch (Exception e) { l.dirty = true; l.salaOk = false; if (attempt >= 1 || j.fin) throw e; j.pasos.add("Reintento: " + e.getMessage()); }
       }
       l.curRec = null;
       if (!j.saving) finish(j, null);
@@ -294,7 +320,7 @@ public class Auto {
     final int n, port, cdpPort;
     volatile boolean busy; final AtomicInteger saves = new AtomicInteger(); volatile long reservado, libreDesde;
     volatile Process motor, browser;
-    boolean cacheClean; volatile Cdp cdp; String dirTarget, dirSession; volatile boolean dirty = true; volatile Rec curRec;
+    boolean cacheClean; volatile Cdp cdp; String dirTarget, dirSession; volatile boolean dirty = true, salaOk; volatile Rec curRec;
     final Map<String, String> screens = new ConcurrentHashMap<>(), targetScreen = new ConcurrentHashMap<>(), targetSession = new ConcurrentHashMap<>();
     final Map<String, byte[]> lastFrame = new ConcurrentHashMap<>(); final Map<String, Long> lastAt = new ConcurrentHashMap<>();
     // motor 1 keeps the ports it always had (8091, 9333); the others: 8092-8094 and 9330-9332 (game tests use 8095+ and 9335+)
@@ -352,12 +378,12 @@ public class Auto {
     // close this motor's browser (and, for motors 2-4, its game too)
     void cerrar(boolean juego) {
       quitDirector(); if (cdp != null) cdp.close(); cdp = null;
-      if (browser != null) browser.destroy(); browser = null; cacheClean = false; dirty = true;
+      if (browser != null) browser.destroy(); browser = null; cacheClean = false; dirty = true; salaOk = false;
       screens.clear(); targetScreen.clear(); targetSession.clear(); lastFrame.clear(); lastAt.clear();
       if (juego && motor != null) { motor.destroy(); motor = null; System.out.println("Motor " + (n + 1) + " cerrado"); }
     }
     void abrir(Job j) throws Exception {
-      if (cdp == null || browser == null || !browser.isAlive()) { j.estado = "Abriendo el navegador oculto…"; screens.clear(); targetScreen.clear(); dirTarget = null; dirty = true; cacheClean = false; cdp = Cdp.open(navegador()); listen(cdp); }
+      if (cdp == null || browser == null || !browser.isAlive()) { j.estado = "Abriendo el navegador oculto…"; screens.clear(); targetScreen.clear(); dirTarget = null; dirty = true; salaOk = false; cacheClean = false; cdp = Cdp.open(navegador()); listen(cdp); }
     }
 
     void play(Job j) throws Exception {
@@ -375,7 +401,8 @@ public class Auto {
       String escena = grabar || probar ? j.q.getOrDefault("escena", "") : "W." + j.q.get("ventana");
       boolean[] began = { false };
       abrir(j);
-      if (dirty || dirSession == null) { System.out.println("Motor " + (n + 1) + ": partida nueva (" + (dirty ? "sucia" : "sin director") + ")"); director(j); }
+      boolean enSala = dirty && salaOk && SALA.contains(escena) && dirSession != null; // «La sala» right after «Entrar»
+      if ((dirty && !enSala) || dirSession == null) { System.out.println("Motor " + (n + 1) + ": partida nueva (" + (dirty ? "sucia" : "sin director") + ")"); director(j); }
       String sim = dirSession;
       for (String s : ALL.split(",")) if (!screens.containsKey(s)) findScreen(s);
       j.fase = "jugando";
@@ -389,7 +416,7 @@ public class Auto {
       int seen = 0; long start = System.currentTimeMillis();
       try {
         for (;;) {
-          Thread.sleep(300);
+          Thread.sleep(150);
           Map<String, Object> o = Json.obj(Json.parse((String) eval(cdp, sim, "JSON.stringify({m: marks.slice(" + seen + "), d: __job.done, e: __job.err || ''})")));
           List<Object> ms = Json.arr(o.get("m")); seen += ms.size();
           for (Object mo : ms) {
@@ -404,7 +431,8 @@ public class Auto {
           if (Boolean.TRUE.equals(o.get("d"))) break;
           if (System.currentTimeMillis() - start > 6 * 60000) throw new Exception("La escena tardó demasiado.");
         }
-      } finally { if (LEAVE.contains(escena) || endsGame(escena)) dirty = true; }
+        salaOk = SALA.contains(escena); // the scene played to its end: the room it left is good for the next room window
+      } finally { if (LEAVE.contains(escena) || endsGame(escena)) dirty = true; else salaOk = false; }
       if (probar) { if (!began[0]) throw new Exception("La escena terminó sin empezar la jugada."); j.hechos.add("ok"); return; }
       if (grabar) {
         Rec r = curRec; r.end(); curRec = null;
@@ -432,6 +460,8 @@ public class Auto {
       catch (Exception e) { b64 = (String) cdp.call("Page.captureScreenshot", Map.of("format", "jpeg", "quality", 88), reattach(screen)).get("data"); }
       Path out = CatalogoServer.root.resolve("img/" + name + ".jpg"); Files.createDirectories(out.getParent());
       Files.write(out, Base64.getDecoder().decode(b64)); j.hechos.add("img/" + name + ".jpg");
+      // the scene goes on as soon as the picture is saved (ventanas.js shotTaken) instead of a fixed wait
+      try { eval(cdp, dirSession, "((globalThis.__shotOk = globalThis.__shotOk || {})[" + Json.str(name) + "] = 1, 1)"); } catch (Exception e) { /* it waits its old time */ }
       j.estado = "Captura guardada";
     }
     // Every page the director opens (one per screen) is attached so it can be shot or filmed
@@ -488,7 +518,7 @@ public class Auto {
       }
       for (String s : ALL.split(",")) if (!screens.containsKey(s)) j.pasos.add("Pantalla sin abrir: " + s);
       Thread.sleep(4000); // the start animation on the table
-      dirty = false;
+      dirty = false; salaOk = false;
     }
     boolean mesaUrl(String url) { return url.matches("https?://[^/]+:" + port + "/(\\?.*)?(#.*)?"); }
     void track(Cdp c, Map<String, Object> p) {
@@ -575,7 +605,12 @@ public class Auto {
       if (!on) return;
       String screen = l.screens.entrySet().stream().filter((e) -> e.getValue().equals(s)).map(Map.Entry::getKey).findFirst().orElse(null);
       if (screen == null) return;
+      // Luis 2026-10-25 (animaciones atrasadas): the time the browser drew the picture, not when this server got to it.
+      // Frames are handled one after another on one thread: when writing them fell behind, the late ones got later
+      // times and the video stood still and then jumped. The browser's own time stamp keeps each one where it was.
       long at = System.currentTimeMillis();
+      try { Object ts = Json.obj(p.get("metadata")).get("timestamp"); if (ts instanceof Number) { long b = Math.round(((Number) ts).doubleValue() * 1000); if (Math.abs(b - at) < 10000) at = b; } } catch (Exception e) { /* arrival time */ }
+      List<long[]> tl = times.get(screen); if (tl != null && !tl.isEmpty() && at < tl.get(tl.size() - 1)[0]) at = tl.get(tl.size() - 1)[0];
       List<Path> fs = frames.computeIfAbsent(screen, (k) -> new CopyOnWriteArrayList<>());
       try { Path d = dirOf(screen); Files.createDirectories(d); Path f = d.resolve(fs.size() + ".jpg"); Files.write(f, Base64.getDecoder().decode((String) p.get("data"))); fs.add(f); times.computeIfAbsent(screen, (k) -> new CopyOnWriteArrayList<>()).add(new long[] { at }); }
       catch (IOException e) { /* frame lost: the next one follows */ }

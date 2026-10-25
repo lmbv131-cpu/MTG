@@ -21,7 +21,10 @@ const ready = async (screen, test) => {
 globalThis.wready = ready;
 const tidy = (n) => P[n].evaluate((keepZoom) => { document.querySelectorAll('.overlay,.g-quit' + (keepZoom ? '' : ',.g-ov.gz')).forEach((o) => o.remove()); const sk = document.getElementById('gskip'); if (sk && !sk.classList.contains('hidden')) { const c = [...sk.querySelectorAll('button')].find((b) => /Cancelar/.test(b.textContent)); if (c) c.click(); } const me = document.querySelector('#grail .gr.me:not(.on)'); if (me) me.click(); }, !!globalThis.KEEPZOOM).catch(() => {});
 globalThis.tidy = tidy;
-const shot = async (screen, name, test) => { await wait(1200); await ready(screen, test); await wait(300); if (!globalThis.KEEPZOOM && P[screen]) await P[screen].evaluate(() => document.querySelectorAll('.g-ov.gz').forEach((o) => o.remove())).catch(() => {}); mark('shot', { screen, name }); await wait(globalThis.SHOTWAIT || 1800); };
+const shot = async (screen, name, test) => { await wait(1200); await ready(screen, test); await wait(300); if (!globalThis.KEEPZOOM && P[screen]) await P[screen].evaluate(() => document.querySelectorAll('.g-ov.gz').forEach((o) => o.remove())).catch(() => {}); mark('shot', { screen, name }); await shotTaken(name); };
+// The catalog server says when it has the picture (globalThis.__shotOk[name], Luis 2026-10-25: faster photos): the scene
+// goes on at once instead of always waiting 1.8 s (4.5 s on the Pi). An older server never says: then the old wait
+const shotTaken = async (name) => { const t = Date.now() + (globalThis.SHOTWAIT || 1800) * LENTO; while (Date.now() < t) { if (globalThis.__shotOk && __shotOk[name]) { delete __shotOk[name]; return; } await wait0(60); } };
 globalThis.shot = shot;
 // Click the first visible button whose text contains t (in a tablet)
 const tap = (n, t) => P[n].evaluate((t) => { const b = [...document.querySelectorAll('button')].find((x) => x.offsetParent && x.textContent.trim().includes(t)); if (b) b.click(); return !!b; }, t);
@@ -90,7 +93,10 @@ const endGame = async () => {
   for (const n of ['Malaguita', 'Calero', 'Albertito', 'Elena']) { await send(n, { type: 'concede' }); await wait(2500); }
   await wait(4000);
 };
-W['mesa-fin'] = async () => { await endGame(); await T.mesa.waitForFunction(() => !!document.getElementById('winov') && !(window.FX && (FX.busy || FX.defeating)), null, { timeout: 60000 }).catch(() => {}); await wait(2500); await shot('mesa', 'mesa-fin'); };
+W['mesa-fin'] = async () => { await endGame(); await T.mesa.waitForFunction(() => !!document.getElementById('winov') && !(window.FX && (FX.busy || FX.defeating)), null, { timeout: 60000 }).catch(() => {}); await wait(2500); await shot('mesa', 'mesa-fin');
+  // the same ending on Luis's tablet: the «fin» picture too, so «Tomar todas las capturas» need not end a second game for it
+  if (await P.Luis.waitForFunction(() => !!document.querySelector('.wt') && !(window.FX && (FX.busy || FX.defeating)), null, { timeout: 20000 * LENTO }).then(() => true, () => false)) await shot('Luis', 'fin');
+};
 
 // ---- tablet ----
 // p152: pantallas sueltas (login.html / usuarios.html con ?sim=, sin servidor); al acabar vuelve a la partida
@@ -207,7 +213,9 @@ globalThis.clean = async () => {
     }
     if (!any) break;
   }
-  await settle().catch(() => {});
+  // In the room (no game: after «La sala» or «Entrar», which now follow each other without a new game) there is nothing to settle
+  const sala = await P.Luis.evaluate(() => { const l = document.getElementById('lobby'); return !!(l && !l.classList.contains('hidden')); }).catch(() => false);
+  if (!sala) await settle().catch(() => {});
 };
 for (const k of Object.keys(W)) { const f = W[k]; if (f.__w) continue; W[k] = async () => { await clean(); try { return await f(); } catch (e) { if (!/toPhase|settle/.test(e.message)) throw e; await clean(); return f(); } }; W[k].__w = 1; }
 return 'ok';

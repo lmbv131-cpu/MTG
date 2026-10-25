@@ -6,7 +6,8 @@ d228b28e430bdacd5367d04b562679bab4950543 33959 engine/res/blockdata/boosters-spe
 468d15db98217286b90bd0a3599967271da031d1 2340 engine/res/blockdata/fantasyblocks.txt
 1022c6d6386340bdf4e8e7b2d133df90a266f049 216249 engine/res/blockdata/printsheets.txt
 eb79407e14897dacb64a3d852b12884aa7f7f89d 1122 engine/res/blockdata/starters.txt
-7a9e0f141549fa7ad664730fd385a21517a8dae1 17613327 engine/res/cardsfolder/cardsfolder.zip
+a05944bdd6a89fe858eb076f32177fda40a90156 18565871 engine/res/cardsfolder/cardsfolder.zip
+a7f2bbe26723c0d92e9e447ec6855b4cdc78aa3c 75 engine/res/datos.txt
 728d8a5352549bda44d5434efa86d8579dadb89a 6904880 engine/res/deckgendecks/Commander.dat
 8e40d2790e7f172d032c6dea42f0f215ddf1901c 651 engine/res/defaults/editor.xml
 4b015291692f318d7a8f75449ad7daa40ba8e287 3275 engine/res/defaults/gauntlet/LOCKED_DotP Preconstructed.dat
@@ -417,7 +418,7 @@ e0317acb63d7689ecd9fcb31ed56b967761bb07d 9491 engine/res/editions/Magic 2014.txt
 3a9c1133b4327dc0212fe829f39d1f587318620d 11037 engine/res/editions/Magic 2015.txt
 5c06de4ade41d4bbcba8b93403bd2c23ec657f22 3143 engine/res/editions/Magic Online Avatars.txt
 1b563a7d5896bf34fc2e444297571ea37e05152b 1603 engine/res/editions/Magic Online Deck Series.txt
-f2947c46991cc7eb6dd60988536919f11ffeba27 125059 engine/res/editions/Magic Online Promos.txt
+c8babfa741d727dc063ee46a52ca938fc8c107ba 125101 engine/res/editions/Magic Online Promos.txt
 2e363bcd2d9b3ba58c83d91e226bf4a627fc8aa0 5658 engine/res/editions/Magic Online Theme Decks.txt
 5555a7500c95df58464114275bf576ac879695ab 332 engine/res/editions/Magic Origins Clash Pack.txt
 b6166cc88c8970fc84e73d8d1a6f015116c196f0 467 engine/res/editions/Magic Origins Promos.txt
@@ -464,7 +465,7 @@ a23541c644c86b396d172c7c7fde95665cefc846 9736 engine/res/editions/Masters 25.txt
 4d0c2b86967f99df8cebabeb89ec4dfd3d5c5aa3 8225 engine/res/editions/Masters Edition III.txt
 933fc13525e9f1960cf6cc71b664e01896caf059 9383 engine/res/editions/Masters Edition IV.txt
 5c1e7de20f5022d772438d2e2767d6c46b7a76dd 6886 engine/res/editions/Masters Edition.txt
-4fb20cdbdf3b1b8be606cc1544742c02013f4ff3 4819 engine/res/editions/Media and Collaboration Promos.txt
+b48a8ff6d29463c383f5342c4ea97f480214f918 4951 engine/res/editions/Media and Collaboration Promos.txt
 ed9d29bfd2ac30e04eca8e11cf45e0c4e8a84052 136 engine/res/editions/Mercadian Masques Promos.txt
 0bfe626605a01fadc4ce0eb5326478eef1a6e2bc 12345 engine/res/editions/Mercadian Masques.txt
 189ed5d3ebf284395555ba3df831ad052b4f9b0b 12327 engine/res/editions/Mirage.txt
@@ -489,7 +490,7 @@ a7cab1db3df9697edb9fecea6f06a4969206360c 9156 engine/res/editions/Modern Masters
 129ed783ffa9db7571b9ad2fc73beed35e149296 14782 engine/res/editions/Murders at Karlov Manor Commander.txt
 16379f8d7c9b0d11253bc42713261dbbadb1ff37 19793 engine/res/editions/Murders at Karlov Manor.txt
 578f29647d27896eb0394c303d2495612437228c 14689 engine/res/editions/Mystery Booster 2.txt
-cfe5461b121b3180cff9d20efd3b269f9e94e7e5 3448 engine/res/editions/Mystery Booster Commander Edition.txt
+5eb84fe2bedf3d3e6f4b58808dbfe7a5250b1545 3448 engine/res/editions/Mystery Booster Commander Edition.txt
 c65330ada85d49a3325ee04051bc338e3ea18914 4602 engine/res/editions/Mystery Booster Playtest Cards.txt
 a4547948c93f70c02f83cec84441a81bae31113c 38737 engine/res/editions/Mystery Booster.txt
 07f1b8afd5641f92ec61c8f376ba518ade0a0a61 859 engine/res/editions/Mythic Edition - Guilds of Ravnica.txt
@@ -572,8 +573,8 @@ a3d458f9a4933540f5b4e7219099fdd09bfc82fd 216 engine/res/editions/Scars of Mirrod
 edd9b9dcff882029701b8d4b1d12610b8379c2ed 9230 engine/res/editions/Scars of Mirrodin.txt
 7f5d9e4df3efc55de72c042d7e8480c534cbd152 134 engine/res/editions/Scourge Promos.txt
 4163a16ad4c4f77e13202be0bff20c9b53922718 5417 engine/res/editions/Scourge.txt
-0a57ba3bcd5834563c0efb5d81a82c5f79201553 3285 engine/res/editions/Secret Lair Countdown.txt
-1fe11a20044edf75d5226da122ca5f0afb7bae30 126587 engine/res/editions/Secret Lair Drop.txt
+ff323b051b6e54f4bcec25726cccec8851331bc2 4419 engine/res/editions/Secret Lair Countdown.txt
+f1b364384c8f6e5a031f86b3b067bee587018da1 126940 engine/res/editions/Secret Lair Drop.txt
 f56b1b458049457e3f72977073bbdad6898abce7 2072 engine/res/editions/Secret Lair Promo.txt
 55bff39ea7527c45c3529697b9c23f4b52a93d28 543 engine/res/editions/Secret Lair Showcase Planes.txt
 1f8e4cf6da99db4c3d189ea00e45ddefa518b9f3 710 engine/res/editions/Secret Lair Ultimate Edition.txt
@@ -594,10 +595,10 @@ ab9e80b11e01acaab0d02ea9550f80925596adbe 413 engine/res/editions/Signature Spell
 4392f60691083fe9d10dd8e0359618919536ba75 390 engine/res/editions/Signature Spellbook Gideon.txt
 1d2e8eec87501ae8529f57d8a88f5a108b2efba9 379 engine/res/editions/Signature Spellbook Jace.txt
 45db37a5198e9b17d51e4430cd824c55f57cc9f2 6409 engine/res/editions/Special Guests.txt
-d677f77866119b45e53e1b6e86d54ab1f1ff57bc 598 engine/res/editions/Spotlight Series.txt
-64a69ba59211d1cfdee2d8ac72f9b497ad8055ae 1892 engine/res/editions/Star Trek Commander.txt
-49fc81c05e259863630c80f811ca9d3b3dd60c2f 5471 engine/res/editions/Star Trek.txt
-a368980967d5d1837d180e4ec55aa78f1a8ab42c 186 engine/res/editions/Stardates.txt
+cdefb0f4899f68c9a5b5e12ca43560ce6897d405 647 engine/res/editions/Spotlight Series.txt
+9b4a2d507a09ac4821c6cf2bfe5636dada83602a 2852 engine/res/editions/Star Trek Commander.txt
+fc6add7661fda527c30159b625c7a52513c0a9c4 16184 engine/res/editions/Star Trek.txt
+a685fb68a0ae0ff2494b4a752fc4c25df68e3cc8 546 engine/res/editions/Stardates.txt
 77df2aa3118f9301ed4b12985b7413ca00db46e9 5875 engine/res/editions/Starter 1999.txt
 4404b3bc05e5c690d4687fdc4ca0edd8b2dc42c3 790 engine/res/editions/Starter 2000.txt
 8c7f20ccd1dcc1507eb94f947cf1595714a08722 14171 engine/res/editions/Starter Commander Decks.txt
@@ -628,7 +629,7 @@ eb3acc2c11f54acf9bde188a9d0d53c8ad5eab87 8459 engine/res/editions/The Brothers W
 64e99d7e0c37fdc78305805d33c98b42828d981d 4186 engine/res/editions/The Dark.txt
 732035cfb76c551bff22a0f1a817da275284455a 6332 engine/res/editions/The Hobbit Eternal.txt
 466686189c2fdea78d7b85623d08a5f5d9ebd049 18059 engine/res/editions/The Hobbit.txt
-6c3d81c11d60bca87e4f3a917cae552286644a3e 231577 engine/res/editions/The List.txt
+8c37eb220c23c9f7664467053fc77915923c6253 234792 engine/res/editions/The List.txt
 0f3891312f7a5b616412595588bd8819d202bad9 26195 engine/res/editions/The Lord of the Rings Tales of Middle-earth Commander.txt
 aa33cb4da2563ac36db078577fe4c945a6890b1d 34737 engine/res/editions/The Lord of the Rings Tales of Middle-earth.txt
 f334289c817ad0332661e14f2802ac14a9fd980c 15214 engine/res/editions/The Lost Caverns of Ixalan Commander.txt
@@ -2055,7 +2056,7 @@ d6249685685c18c8159583d9670d31f6443345cd 420 engine/res/formats/Sanctioned/Stand
 efeebec5cb535a787046c884ba58635025670c7b 179646 engine/res/languages/en-US.properties
 37d0a0c50c5cbf2b32aed5a194fb652476452f63 204472 engine/res/languages/es-ES.properties
 d28968af0ee1758485ac8764c1c9f556fd09d9c2 531 engine/res/lists/NonStackingKWList.txt
-01ad7db2b25fd65485a14c5b18197370ba7ce046 7495 engine/res/lists/TypeLists.txt
+b57c5aa41f58a3d938818f442877fd8d6ce238e9 7555 engine/res/lists/TypeLists.txt
 4909f145e67540d20bdbb094de0c74131b411705 24153 engine/res/lists/achievement-images.txt
 09d89e1f8cd3c9fca91058d53ad75e3a99d7738c 4068 engine/res/lists/altwin-achievements.txt
 30cedf0327443c2b2dc20627bff3334f2953f5b3 4711 engine/res/lists/booster-images.txt
@@ -3093,6 +3094,7 @@ c0dc8d31ee7aa813c5a0e89bc4727d51ca6026ff 85 engine/res/tokenscripts/w_1_1_rabbit
 32c035987e7b4f91e267aa490df88015704dd706 106 engine/res/tokenscripts/w_1_1_soldier_lifelink.txt
 8f063879ddf3d197c617dbd634bc72f3c7f7e99b 85 engine/res/tokenscripts/w_1_1_spirit.txt
 c38f1517c0f985106272aa45c442d4dd89460621 100 engine/res/tokenscripts/w_1_1_spirit_flying.txt
+d0cd16b3b2784e50f1ca83a1f7a1457b41dfbd89 194 engine/res/tokenscripts/w_1_1_tribble_noblock.txt
 86562fd01563a7c68dab4bb051eea082e9de7abf 106 engine/res/tokenscripts/w_1_1_vampire_lifelink.txt
 d89636e004fd5d9ca2685ba75f9e76f7fa593991 87 engine/res/tokenscripts/w_1_1_warrior.txt
 dde5e86abfbd2920044bb19dbd9cf56deee2434d 108 engine/res/tokenscripts/w_1_1_warrior_vigilance.txt
