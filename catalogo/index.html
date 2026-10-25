@@ -239,6 +239,7 @@ code { font: 12.5px var(--f-mono); color: var(--gold); }
 <script src="vid/kw/packs.js"></script>
 <script src="porque.js" charset="utf-8"></script>
 <script src="escenas.js" charset="utf-8"></script>
+<script src="kwcartas.js" charset="utf-8"></script>
 <script src="fincartas.js" charset="utf-8"></script>
 <script>
 const PLAY = '<svg viewBox="0 0 10 10"><path d="M2 1l7 4-7 4z" fill="currentColor"/></svg>';
@@ -249,8 +250,9 @@ const V = typeof VID !== 'undefined' ? VID : {};
 const KV = typeof KVID !== 'undefined' ? KVID : {};
 const KWX = typeof MTG_KW_EXTRA !== 'undefined' ? MTG_KW_EXTRA : {};
 const KWN = Object.assign({}, KWX, typeof MTG_KEYWORDS !== 'undefined' ? MTG_KEYWORDS : {});
-const NOVID = Object.assign({}, typeof KNOVID !== 'undefined' ? KNOVID : {}, typeof MTG_NOSIM !== 'undefined' ? MTG_NOSIM : {});
-const ESC = typeof MTG_ESC !== 'undefined' ? MTG_ESC : {}, ESCA = typeof MTG_ESC_A !== 'undefined' ? MTG_ESC_A : {};
+const NOVID = Object.assign({}, typeof KNOVID !== 'undefined' ? KNOVID : {}, typeof MTG_NOSIM !== 'undefined' ? MTG_NOSIM : {}, typeof MTG_KW_NO !== 'undefined' ? MTG_KW_NO : {});
+// Without the old videos (PC, Pi) a keyword still knows its scene's card (kwcartas.js), Luis 2026-10-25
+const ESC = Object.assign({}, typeof MTG_KW_CARTA !== 'undefined' ? MTG_KW_CARTA : {}, typeof MTG_ESC !== 'undefined' ? MTG_ESC : {}), ESCA = typeof MTG_ESC_A !== 'undefined' ? MTG_ESC_A : {};
 for (const k in ESC) delete NOVID[k]; // a scene now exists for it
 // Rows without a video can still be simulated with these screens (Luis 21:42)
 const DEFROLES = { causa: 'Luis', tu: 'Pablo', otro: 'Malaguita' };
@@ -386,7 +388,7 @@ function renderKw() {
     const who = k.v ? `<div class="an">${esc(k.v.roles.causa)}</div><div class="ej">con ${esc(k.v.card)}</div>`
       : ESC[k.id] && (GRAB[gkey('k:' + k.id)] || []).length ? `<div class="an">Luis</div><div class="ej">con ${esc(ESC[k.id])}</div>`
       : ESC[k.id] && !(k.id in NOVID) ? `<div class="ej">Sin vídeo todavía</div><div class="ej">se simula con ${esc(ESC[k.id])}</div>`
-      : `<div class="ej">${esc(k.id in NOVID ? NOVID[k.id] : k.g !== 'Palabra clave' ? 'Todavía sin vídeo' : 'Ninguna carta de los mazos la tiene')}</div>`;
+      : `<div class="ej">${esc(k.id in NOVID ? NOVID[k.id] : 'Todavía sin escena')}</div>`;
     return `<tr class="row${ui.sel === 'k:' + k.id ? ' sel' : ''}" data-open="k:${esc(k.id)}" tabindex="0">
       <td><div class="an">${esc(k.es)}</div><div class="ej">${esc(k.id)}${k.g !== 'Palabra clave' ? ' · ' + esc(k.g.toLowerCase()) : ''}</div><span class="mom">momento: kw:${esc(k.id)}</span> <button class="ped-r" data-ped="k:${esc(k.id)}">Pedir cambio</button></td><td class="que">${esc(k.que)}</td><td>${who}</td>
       ${ticks(k.v, 'k:' + k.id)}<td class="c">${simBtn('k:' + k.id, k.v)}</td></tr>`;
@@ -665,6 +667,13 @@ async function pedidoEnviar() {
 }
 async function captureAll(btn, solo) {
   const ks = Object.keys(VENTANAS).filter((k) => !solo || !solo.length || solo.includes(k)), out = document.getElementById('cap-all-m');
+  if (SALL.on && SALL.srv) { if (SALL.on === 'w') { btn.textContent = 'Deteniendo…'; try { await fetch(SRV + '/auto-todo?parar=1', { cache: 'no-store' }); } catch (e) {} } return; }
+  // Kept by the server, like «Simular todo»: closing or duplicating the tab doesn't stop it (Luis 2026-10-25 00:10)
+  if (!globalThis.SIMTODO) {
+    let r = null; try { r = await fetch(SRV + '/auto-todo', { method: 'POST', headers: { 'Content-Type': 'application/json; charset=utf-8' }, body: JSON.stringify({ t: 'w', items: ks.map((k) => ({ ventana: k, ver: VENTANAS[k][2] || 'Luis', titulo: VENTANAS[k][0] })) }) }); } catch (e) { r = null; }
+    if (r && r.status === 503) { const j = await r.json().catch(() => ({})); out.textContent = j.estado || NOSRV; return; }
+    if (r && r.status !== 404 && r.status !== 405) { const j = await r.json().catch(() => ({})); simSeguir(j.t || 'w'); return; }
+  }
   btn.disabled = true; let bad = 0;
   for (let i = 0; i < ks.length; i++) {
     const k = ks[i];
@@ -724,31 +733,37 @@ async function simServidor(t, btn, ks) {
   const j = await r.json().catch(() => ({})); simRun(null);
   simSeguir(j.t || t); return true;
 }
+// t = 'a' | 'k' («Simular todo») or 'w' («Tomar todas las capturas»)
+const sallEls = (t) => t === 'w' ? [document.getElementById('cap-all'), document.getElementById('cap-all-m')] : [document.querySelector(`[data-sall="${t}"]`), document.getElementById('sall-' + t)];
+const sallBotones = () => [...document.querySelectorAll('[data-sall]'), document.getElementById('cap-all')].filter(Boolean);
 async function simSeguir(t) {
-  const btn = document.querySelector(`[data-sall="${t}"]`), out = document.getElementById('sall-' + t); if (!btn || !out) return;
-  const bar = btn.parentElement.querySelector('.sbar'), fill = bar.querySelector('i');
-  SALL.on = t; SALL.srv = true; SALL.stop = false; btn.textContent = 'Detener'; bar.hidden = false;
-  document.querySelectorAll('[data-sall]').forEach((b) => { b.disabled = b !== btn; });
+  const [btn, out] = sallEls(t); if (!btn || !out) return;
+  const bar = btn.parentElement.querySelector('.sbar') || document.createElement('div'), fill = bar.querySelector('i') || document.createElement('i');
+  SALL.on = t; SALL.srv = true; SALL.stop = false; btn.textContent = 'Detener'; btn.disabled = false; bar.hidden = false;
+  sallBotones().forEach((b) => { b.disabled = b !== btn; });
   let j = null, lastDone = -1, fallos = 0;
   for (;;) {
     try { const r = await fetch(SRV + '/auto-todo', { cache: 'no-store' }); if (!r.ok) throw new Error(r.status); j = await r.json(); fallos = 0; }
     catch (e) { if (++fallos >= 3) out.textContent = 'Sin conexión con el catálogo; reintentando… (la simulación sigue en el servidor)'; await new Promise((ok) => setTimeout(ok, 3000)); continue; }
     if (!j.activo) break;
-    if (j.done !== lastDone) { lastDone = j.done; await loadGrab(); GRAB.t = Date.now(); rerender(); }
+    if (j.done !== lastDone) { lastDone = j.done; await loadGrab(); GRAB.t = Date.now(); if (t === 'w') capRefresh(); rerender(); }
     const per = j.done ? (Date.now() - j.desde) / j.done : 0, ahora = (j.ahora || []).filter((a) => !a.guardando), guard = (j.ahora || []).length - ahora.length;
-    out.textContent = `${j.done}/${j.n} listas` + (guard ? ` · ${guard} guardando vídeos` : '') + (per ? ` · ${dura(per)} por escena · faltan unos ${dura(per * (j.n - j.done))}` : '')
+    const W = t === 'w';
+    out.textContent = `${j.done}/${j.n} ${W ? 'capturas' : 'listas'}` + (guard ? ` · ${guard} guardando vídeos` : '') + (per ? ` · ${dura(per)} por ${W ? 'captura' : 'escena'} · faltan unos ${dura(per * (j.n - j.done))}` : '')
       + (j.jugando ? ' · de 1 en 1 (estás jugando)' : j.aLaVez > 1 ? ` · ${j.aLaVez} a la vez` : '') + (j.bad ? ` · ${j.bad} no salieron` : '')
       + (j.parando ? ' · terminando las que están en marcha…' : ahora.length ? ` · ahora: ${ahora.map((a) => a.motor ? `${a.titulo} (motor ${a.motor})` : a.titulo).join(', ')}` : '')
       + ' · sigue aunque cierres esta página';
     fill.style.width = (100 * (j.done + 0.6 * guard) / j.n) + '%';
     await new Promise((ok) => setTimeout(ok, 2000));
   }
-  await loadGrab(); GRAB.t = Date.now(); rerender();
-  out.textContent = (j.done < j.n ? `Detenido en ${j.done}/${j.n}` : `Listo: ${j.n}/${j.n}`) + ` en ${dura((j.fin || Date.now()) - j.desde)}` + (j.motivo && j.motivo !== 'Detenido' ? ` · ${j.motivo}` : '') + (j.bad ? ` · ${j.bad} no salieron (pasa el ratón para ver cuáles)` : ' · todos los vídeos son nuevos');
+  await loadGrab(); GRAB.t = Date.now(); if (t === 'w') capRefresh(); rerender();
+  out.textContent = (j.done < j.n ? `Detenido en ${j.done}/${j.n}` : `Listo: ${j.n}/${j.n}`) + ` en ${dura((j.fin || Date.now()) - j.desde)}` + (j.motivo && j.motivo !== 'Detenido' ? ` · ${j.motivo}` : '') + (j.bad ? ` · ${j.bad} no salieron (pasa el ratón para ver cuáles)` : t === 'w' ? ' · todas las capturas son nuevas' : ' · todos los vídeos son nuevos');
   out.title = (j.fallos || []).join('\n');
-  SALL.on = null; SALL.srv = false; btn.textContent = 'Simular todo';
-  document.querySelectorAll('[data-sall]').forEach((b) => { b.disabled = false; });
+  SALL.on = null; SALL.srv = false; btn.textContent = t === 'w' ? 'Tomar todas las capturas' : 'Simular todo';
+  sallBotones().forEach((b) => { b.disabled = false; });
 }
+// New captures: ask for each picture again by the time the server saved it
+function capRefresh() { for (const [k, v] of Object.entries(GRAB._img || {})) if (VENTANAS[k]) CAPTURAS[k] = (SRV ? SRV + '/' : '') + 'img/' + k + '.jpg?' + v; }
 // On opening the page: show a run the server is playing, or the end of the last one
 async function simAlAbrir() {
   let r; try { r = await fetch(SRV + '/auto-todo', { cache: 'no-store' }); } catch (e) { simCortado(); return; }
@@ -756,8 +771,8 @@ async function simAlAbrir() {
   const j = r.ok ? await r.json().catch(() => null) : null; if (!j || j.activo === undefined) return;
   simRun(null);
   if (j.activo) { simSeguir(j.t); return; }
-  const out = document.getElementById('sall-' + j.t);
-  if (out && j.fin && Date.now() - j.fin < 12 * 3600000) out.textContent = `Último «Simular todo»: ${j.done < j.n ? 'detenido en ' + j.done + '/' + j.n : 'listo, ' + j.n + '/' + j.n} (acabó el ${fecha(j.fin)})` + (j.motivo && j.motivo !== 'Detenido' ? ' · ' + j.motivo : '') + (j.bad ? ` · ${j.bad} no salieron` : '');
+  const out = sallEls(j.t)[1];
+  if (out && j.fin && Date.now() - j.fin < 12 * 3600000) out.textContent = `Último «${j.t === 'w' ? 'Tomar todas las capturas' : 'Simular todo'}»: ${j.done < j.n ? 'detenido en ' + j.done + '/' + j.n : 'listo, ' + j.n + '/' + j.n} (acabó el ${fecha(j.fin)})` + (j.motivo && j.motivo !== 'Detenido' ? ' · ' + j.motivo : '') + (j.bad ? ` · ${j.bad} no salieron` : '');
 }
 async function simAll(t, btn) {
   if (SALL.on && SALL.srv) { btn.textContent = 'Deteniendo…'; try { await fetch(SRV + '/auto-todo?parar=1', { cache: 'no-store' }); } catch (e) {} return; }
@@ -894,6 +909,7 @@ try { const t = localStorage.getItem('cat-tab'); if (t === 'ven' || t === 'kw' |
 (async () => {
   const q = new URLSearchParams(location.search), w = q.get('simtodo'); if (!/^(a|fin|k|ven)$/.test(w || '')) return;
   if (w === 'ven') { // window captures, one at a time
+    globalThis.SIMTODO = { ven: true }; // the PC test panel waits on this page's title: keep the page-driven loop
     await loadGrab(); tab('ven'); const out = document.getElementById('cap-all-m');
     const tick = setInterval(() => { document.title = 'SIMTODO ' + (out.textContent || 'empezando'); }, 2000);
     try { await captureAll(document.getElementById('cap-all'), (q.get('solo') || '').split(',').filter(Boolean)); } finally { clearInterval(tick); document.title = 'SIMTODO FIN ' + (out.textContent || ''); }

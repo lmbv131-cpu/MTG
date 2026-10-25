@@ -84,6 +84,7 @@ const pabloAttacks = async () => {
 };
 W['mesa-combate'] = async () => { await pabloAttacks(); await send('Pablo', { type: 'ok' }); await waitIn('Luis', (s) => s.input === 'InputBlock'); await shot('mesa', 'mesa-combate'); await finishCombat(); };
 const endGame = async () => {
+  for (const pg of [T.mesa, P.Luis]) await pg.evaluate(() => { window.MTG_FOCUS_DEMO = 1; }).catch(() => {});
   await scene({ p0battlefield: LAN + ';Darksteel Angel', p0hand: 'Lava Spike', p1life: 3 });
   await cast('Luis', 'Lava Spike', [{ picks: [{ player: 1 }] }]); await passAll(); await settle();
   for (const n of ['Malaguita', 'Calero', 'Albertito', 'Elena']) { await send(n, { type: 'concede' }); await wait(2500); }
@@ -145,15 +146,28 @@ W.bloquear = async () => {
   await toBlock('Luis'); await wait(1500);
   await shot('Luis', 'bloquear'); await finishCombat();
 };
+// Window «danio» («Repartir el daño»): the damage screen of p167 (Mejoras, 2026-10-25).
+// Luis 2026-10-25: the photo shows the new damage screen, one list with every attacker of the combat:
+//  - Rampaging Hippo 5/6 trample, blocked by Darksteel Angel (4/4 flying, indestructible) and Avenger of Zendikar 5/5:
+//    the row being asked (− / +, «letal: N», «indestructible, no muere»; trample: nothing to Luis before 4 + 5)
+//  - Gifted Aetherborn 2/3 deathtouch, blocked by Grizzly Bears and Runeclaw Bear (deathtouch: 1 is lethal to each)
+//  - Hill Giant 3/3, blocked by Siege Mastodon 3/5 alone
+//  - Risen Reef 1/1, not blocked («sin bloquear · 1 daño»)
 W.danio = async () => {
-  await scene({ active: 'p1', p0battlefield: LAN + ';Darksteel Angel;Avenger of Zendikar', p1battlefield: 'Forest;Forest;Forest;Island;Island;Mountain;Command Tower;Cavalier of Thorns;Risen Reef' }, 'Pablo', 'MAIN1');
-  const C = await cid('Pablo', 'battlefield', 'Cavalier of Thorns', 'Pablo');
-  await toAttack('Pablo'); await send('Pablo', { type: 'attackAssign', cards: [C], player: 0 }); await wait(1000); await send('Pablo', { type: 'ok' });
+  await scene({ active: 'p1', p0battlefield: LAN + ';Darksteel Angel;Avenger of Zendikar;Grizzly Bears;Runeclaw Bear;Siege Mastodon',
+    p1battlefield: 'Forest;Forest;Forest;Island;Island;Mountain;Command Tower;Rampaging Hippo;Gifted Aetherborn;Hill Giant;Risen Reef' }, 'Pablo', 'MAIN1');
+  const id = (n) => cid('Pablo', 'battlefield', n, 'Pablo');
+  const H = await id('Rampaging Hippo'), G = await id('Gifted Aetherborn'), HG = await id('Hill Giant'), R = await id('Risen Reef');
+  await toAttack('Pablo'); await send('Pablo', { type: 'attackAssign', cards: [H, G, HG, R], player: 0 }); await wait(1200); await send('Pablo', { type: 'ok' });
   await log('Luis', 'danio tras atacar'); await toBlock('Luis'); await log('Luis', 'danio bloqueo');
-  for (const b of ['Darksteel Angel', 'Avenger of Zendikar']) { await send('Luis', { type: 'blockAssign', blocker: await cid('Luis', 'battlefield', b), attacker: C }); await wait(800); }
+  const blocks = [['Darksteel Angel', H], ['Avenger of Zendikar', H], ['Grizzly Bears', G], ['Runeclaw Bear', G], ['Siege Mastodon', HG]];
+  for (const [b, a] of blocks) { await send('Luis', { type: 'blockAssign', blocker: await cid('Luis', 'battlefield', b), attacker: a }); await wait(700); }
   await log('Luis', 'danio bloqueado'); await send('Luis', { type: 'ok' });
-  for (let i = 0; i < 30; i++) { if (await getQ('Pablo') || await P.Pablo.evaluate(() => !!document.querySelector('[class*="g5b"]'))) break; for (const n of Object.keys(P)) { const x = await st(n); if (n !== 'Pablo' && x && (/InputBlock/.test(x.input || '') || canPass(x))) await send(n, { type: 'ok' }); } await wait(600); }
-  await log('Pablo', 'danio shot'); await shot('Pablo', 'danio'); await finishCombat();
+  // Until Pablo's tablet shows the damage list (p167: .g5l); the others pass or confirm their blocks
+  for (let i = 0; i < 40; i++) { if (await P.Pablo.evaluate(() => !!document.querySelector('.g5l .g5r.on'))) break; for (const n of Object.keys(P)) { const x = await st(n); if (n !== 'Pablo' && x && (/InputBlock/.test(x.input || '') || canPass(x))) await send(n, { type: 'ok' }); } await wait(600); }
+  await log('Pablo', 'danio shot'); await shot('Pablo', 'danio', () => !!document.querySelector('.g5l .g5r.on'));
+  // Confirm the split shown (lethal to each in order) so the combat can end
+  await P.Pablo.click('#gpanel .gp-foot .g-gold').catch(() => {}); await wait(800); await finishCombat();
 };
 W.formas = async () => { await scene({ p0battlefield: LAN, p0hand: 'Mulldrifter' }); await startCast('Luis', 'Mulldrifter'); await shot('Luis', 'formas'); await cancelAll('Luis'); };
 W.costes = async () => { await scene({ p0battlefield: LAN + ';Island;Island;Island', p0hand: 'Whispers of the Muse' }); await startCast('Luis', 'Whispers of the Muse'); await shot('Luis', 'costes'); await cancelAll('Luis'); };

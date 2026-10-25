@@ -57,7 +57,24 @@ function inWorker(d, ts) {
 }
 
 async function fast(d, ts) {
-  const first = await bitmap(d, 0), W = first.width & ~1, H = first.height & ~1;
+  // The video takes the size of the biggest picture, not of the first one: on the Pi a live preview could leave the
+  // first pictures smaller (974x676 for a 1770x1230 tablet) and the whole video came out small and blurry (Luis 25/10)
+  const first = await bitmap(d, 0); let big = first;
+  for (const k of [Math.floor(ts.length / 2), ts.length - 2]) {
+    if (k <= 0) continue;
+    const b = await bitmap(d, k).catch(() => null);
+    if (b && b.width * b.height > big.width * big.height) { if (big !== first) big.close(); big = b; } else if (b) b.close();
+  }
+  const W = big.width & ~1, H = big.height & ~1;
+  if (big !== first) big.close();
+  // a smaller picture is drawn up to the video's size (the encoder wants every frame the same size)
+  let fit = null;
+  const frameOf = (bm, t) => {
+    if (bm.width === W && bm.height === H) return new VideoFrame(bm, { timestamp: t });
+    if (!fit) { const cv = new OffscreenCanvas(W, H); fit = { cv, g: cv.getContext('2d') }; }
+    fit.g.drawImage(bm, 0, 0, W, H);
+    return new VideoFrame(fit.cv, { timestamp: t });
+  };
   // Sharp text matters more than file size: constant quality (quantizer) when the browser has it, else a high bit rate
   const rate = Math.max(4000000, Math.round(W * H * 30 * 0.1));
   let codec = null, cfg = null;
@@ -80,7 +97,7 @@ async function fast(d, ts) {
   for (let i = 0; i < n; i++) {
     const next = i + 1 < n ? bitmap(d, i + 1).catch((e) => { if (i + 1 === n - 1) return null; throw e; }) : null;
     const t = ts[i] - ts[0];
-    const f = new VideoFrame(bm, { timestamp: t * 1000 });
+    const f = frameOf(bm, t * 1000);
     const key = t - lastKey >= 1000; if (key) lastKey = t; // a seek point every second
     enc.encode(f, { keyFrame: key, ...qopt }); f.close(); bm.close();
     if (bad) throw bad;

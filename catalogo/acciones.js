@@ -35,7 +35,7 @@ window.VENTANAS = {
   'objetivo': ['Elegir objetivo', 'Tableta: tocas la carta o el jugador al que apuntas, en tu mesa o en la de otro.', 'Luis'],
   'atacar': ['Atacar', 'Tableta, tu turno: tocas tus criaturas y a quién atacan.', 'Luis'],
   'bloquear': ['Bloquear', 'Tableta: te atacan y tocas tus criaturas para bloquear.', 'Luis'],
-  'danio': ['Repartir el daño', 'Tableta: varias criaturas bloquean a tu atacante y repartes su daño.', 'Pablo'],
+  'danio': ['Repartir el daño', 'Tableta: todo el combate en una lista; repartes el daño de tu atacante entre sus bloqueadores como quieras (con arrollar, letal a todos antes de llegar al jugador).', 'Pablo'],
   'formas': ['Elegir cómo lanzarla', 'Tableta: una carta con varias formas de jugarla (normal, evocar, retrospectiva…).', 'Luis'],
   'costes': ['Costes opcionales', 'Tableta: pagar o no un coste extra (estímulo, recompra…).', 'Luis'],
   'x': ['Elegir X', 'Tableta: teclado para la X; empieza en lo máximo que puedes pagar.', 'Luis'],

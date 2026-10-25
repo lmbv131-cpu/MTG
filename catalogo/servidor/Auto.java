@@ -45,17 +45,18 @@ public class Auto {
   //   POST /auto-todo {"t":"a","items":[{"clave":"a:x","escena":"SC.a_x","ver":"mesa,Luis","viejo":"..","papeles":"..","titulo":".."}]}
   //   GET  /auto-todo → progress   |   GET /auto-todo?parar=1 → stop after the scenes in progress
   static class Todo {
-    final String t; final List<Map<String, String>> items; final int n; final long desde = System.currentTimeMillis();
+    final String t; final List<Map<String, String>> items; final int n, max; final long desde = System.currentTimeMillis();
     final AtomicInteger next = new AtomicInteger(), done = new AtomicInteger(), bad = new AtomicInteger(), running = new AtomicInteger(), seguidos = new AtomicInteger();
     final List<String> fails = new CopyOnWriteArrayList<>(); final Map<String, Job> now = new ConcurrentHashMap<>();
     volatile boolean stop, activo = true; volatile long fin; volatile String motivo = "";
-    Todo(String t, List<Map<String, String>> items) { this.t = t; this.items = items; n = items.size(); }
+    // window captures («Tomar todas las capturas», t = "w") go one at a time, as the page always did them
+    Todo(String t, List<Map<String, String>> items) { this.t = t; this.items = items; n = items.size(); max = t.equals("w") ? 1 : 2; }
     String json() {
       List<Object> ahora = new ArrayList<>();
       for (Map.Entry<String, Job> e : now.entrySet()) { Job j = e.getValue(); Map<String, Object> m = new LinkedHashMap<>(); m.put("titulo", e.getKey()); m.put("motor", j.lane == null ? 0 : j.lane.n + 1); m.put("guardando", j.saving); m.put("fase", j.fase); ahora.add(m); }
       Map<String, Object> m = new LinkedHashMap<>();
       m.put("activo", activo); m.put("t", t); m.put("n", n); m.put("done", done.get()); m.put("bad", bad.get()); m.put("desde", desde); m.put("fin", fin);
-      m.put("parando", stop && activo); m.put("motivo", motivo); m.put("aLaVez", Math.min(2, obj)); m.put("jugando", jugando); m.put("ahora", ahora); m.put("fallos", fails);
+      m.put("parando", stop && activo); m.put("motivo", motivo); m.put("aLaVez", Math.min(max, obj)); m.put("jugando", jugando); m.put("ahora", ahora); m.put("fallos", fails);
       return Json.str(m);
     }
   }
@@ -68,9 +69,9 @@ public class Auto {
       Map<String, Object> b; try (InputStream in = x.getRequestBody()) { b = Json.obj(Json.parse(new String(in.readAllBytes(), StandardCharsets.UTF_8))); } catch (Exception e) { reply(x, 400, "{\"error\":\"lista ilegible\"}"); return; }
       List<Map<String, String>> items = new ArrayList<>();
       for (Object o : Json.arr(b.get("items"))) {
-        Map<String, Object> it = Json.obj(o); Map<String, String> q = new HashMap<>(); q.put("tipo", "grabar");
-        for (String k : new String[] { "clave", "escena", "ver", "viejo", "papeles", "titulo" }) if (it.get(k) != null) q.put(k, String.valueOf(it.get(k)));
-        if (q.getOrDefault("clave", "").matches("[ak]:[a-z0-9_ '-]+")) items.add(q);
+        Map<String, Object> it = Json.obj(o); Map<String, String> q = new HashMap<>(); q.put("tipo", it.get("ventana") != null ? "captura" : "grabar");
+        for (String k : new String[] { "clave", "escena", "ver", "viejo", "papeles", "titulo", "ventana" }) if (it.get(k) != null) q.put(k, String.valueOf(it.get(k)));
+        if (q.get("tipo").equals("captura") ? q.get("ventana").matches("[a-z0-9-]+") : q.getOrDefault("clave", "").matches("[ak]:[a-z0-9_ '-]+")) items.add(q);
       }
       if (items.isEmpty()) { reply(x, 400, "{\"error\":\"lista vacía\"}"); return; }
       Todo nt = new Todo(String.valueOf(b.getOrDefault("t", "a")), items); todo = nt;
@@ -84,7 +85,7 @@ public class Auto {
     System.out.println("Simular todo: " + td.n + " escenas");
     try {
       while (!td.stop && td.next.get() < td.n) {
-        int target = Math.min(2, objetivo());
+        int target = Math.min(td.max, objetivo());
         if (td.running.get() < target) { td.running.incrementAndGet(); worker.submit(() -> todoLane(td)); }
         Thread.sleep(1000);
       }
@@ -97,7 +98,7 @@ public class Auto {
     try {
       while (!td.stop) {
         int i = td.next.getAndIncrement(); if (i >= td.n) break;
-        Map<String, String> q = new HashMap<>(td.items.get(i)); String title = q.getOrDefault("titulo", q.get("clave")); q.remove("titulo");
+        Map<String, String> q = new HashMap<>(td.items.get(i)); String title = q.getOrDefault("titulo", q.getOrDefault("clave", q.get("ventana"))); q.remove("titulo");
         Job j = new Job(seq.incrementAndGet(), q); jobs.put(j.id, j); td.now.put(title, j);
         run(j);
         while (!j.fin) Thread.sleep(500); // its videos are still being saved
@@ -108,7 +109,7 @@ public class Auto {
           // A game started (the door blocks the motors) or the motors broke: don't burn the whole list on failures
           if (td.seguidos.incrementAndGet() >= 3) { td.stop = true; td.motivo = "Parado tras 3 fallos seguidos: " + j.estado; }
         }
-        if (td.running.get() > Math.min(2, objetivo())) break;
+        if (td.running.get() > Math.min(td.max, objetivo())) break;
       }
     } catch (InterruptedException e) { /* closing */ } finally { td.running.decrementAndGet(); }
   }
@@ -122,7 +123,9 @@ public class Auto {
     Long at = l.lastAt.get(p);
     if (at != null && System.currentTimeMillis() - at < 1500) img = l.lastFrame.get(p); // filming: reuse the film's own frame
     else if (l.cdp != null && p.matches("[A-Za-z]+") && (l.screens.containsKey(p) || l.findScreen(p))) {
-      try { boolean mesa = p.equals("mesa"); img = Base64.getDecoder().decode((String) l.cdp.call("Page.captureScreenshot", Map.of("format", "jpeg", "quality", 60, "clip", Map.of("x", 0, "y", 0, "width", mesa ? 1920 : 1180, "height", mesa ? 1080 : 820, "scale", mesa ? 0.6 : 0.55)), l.screens.get(p)).get("data")); }
+      // No clip scale (Luis 25/10): a scaled screenshot right before filming left the Pi's screencast pictures at 55-60 %
+      // of their size, so the videos came out small and pixelated. A plain screenshot, a bit lower quality instead
+      try { img = Base64.getDecoder().decode((String) l.cdp.call("Page.captureScreenshot", Map.of("format", "jpeg", "quality", 45), l.screens.get(p)).get("data")); }
       catch (Exception e) { img = null; }
     }
     if (img == null) { CatalogoServer.send(x, 204, ""); return; }
@@ -538,6 +541,10 @@ public class Auto {
           "--no-first-run", "--no-default-browser-check", "--disable-popup-blocking", "--disable-background-timer-throttling", "--disable-renderer-backgrounding",
           "--disable-backgrounding-occluded-windows", "--autoplay-policy=no-user-gesture-required", "--mute-audio", "--hide-scrollbars", "--window-size=1920,1080", "--force-device-scale-factor=1.5", "about:blank")); // 1.5: the tablets film at 1770x1230 (sharp text); the table stays 1920x1080
         if (System.getProperty("os.name").toLowerCase().contains("linux")) cmd.add(1, "--no-sandbox");
+        // Extra flags for this machine, one per line (Luis 25/10: the Pi's GPU), in servidor/navegador-flags.txt; # = comment
+        try { Path ff = CatalogoServer.root.resolve("servidor/navegador-flags.txt");
+          if (Files.exists(ff)) for (String f : Files.readAllLines(ff, StandardCharsets.UTF_8)) { f = f.strip(); if (f.startsWith("--")) cmd.add(1, f); } }
+        catch (Exception e) { /* none then */ }
         browser = new ProcessBuilder(cmd).redirectErrorStream(true).redirectOutput(CatalogoServer.root.resolve("servidor/navegador" + suf() + ".log").toFile()).start();
         long t = System.currentTimeMillis() + 30000;
         while (!CatalogoServer.up(cdpPort)) { if (System.currentTimeMillis() > t) throw new Exception("El navegador oculto no arrancó (servidor\\navegador" + suf() + ".log)."); Thread.sleep(300); }
