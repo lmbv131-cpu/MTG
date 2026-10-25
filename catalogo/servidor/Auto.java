@@ -319,6 +319,9 @@ public class Auto {
   static class Lane {
     final int n, port, cdpPort;
     volatile boolean busy; final AtomicInteger saves = new AtomicInteger(); volatile long reservado, libreDesde;
+    // One scene's videos encoded at a time per motor (Luis 2026-10-25 13:20: with 4 scenes saving at once, 16 encoder
+    // pages in one hidden browser froze at ~5% CPU and four keywords failed with «El vídeo tardó demasiado»)
+    final java.util.concurrent.Semaphore encoding = new java.util.concurrent.Semaphore(1);
     volatile Process motor, browser;
     boolean cacheClean; volatile Cdp cdp; String dirTarget, dirSession; volatile boolean dirty = true, salaOk; volatile Rec curRec;
     final Map<String, String> screens = new ConcurrentHashMap<>(), targetScreen = new ConcurrentHashMap<>(), targetSession = new ConcurrentHashMap<>();
@@ -439,7 +442,7 @@ public class Auto {
         if (r.frames.isEmpty()) throw new Exception("La escena no grabó nada.");
         j.fase = "guardando"; j.estado = "Guardando los vídeos…"; j.saving = true;
         saves.incrementAndGet();
-        saver.submit(() -> { try { r.save(); } catch (Exception e) { r.err = e; } finally { saves.decrementAndGet(); try (var w = Files.walk(CatalogoServer.root.resolve("servidor/tmp/" + j.id))) { w.sorted(Comparator.reverseOrder()).forEach((f) -> f.toFile().delete()); } catch (Exception e) { /* none */ } } try { if (r.err != null) throw r.err; if (j.hechos.isEmpty()) throw new Exception("La escena no grabó nada."); finish(j, null); } catch (Exception e) { finish(j, e); } });
+        saver.submit(() -> { try { encoding.acquire(); try { r.save(); } finally { encoding.release(); } } catch (Exception e) { r.err = e; } finally { saves.decrementAndGet(); try (var w = Files.walk(CatalogoServer.root.resolve("servidor/tmp/" + j.id))) { w.sorted(Comparator.reverseOrder()).forEach((f) -> f.toFile().delete()); } catch (Exception e) { /* none */ } } try { if (r.err != null) throw r.err; if (j.hechos.isEmpty()) throw new Exception("La escena no grabó nada."); finish(j, null); } catch (Exception e) { finish(j, e); } });
         return;
       }
       if (j.hechos.isEmpty()) throw new Exception("La escena no sacó ninguna captura.");
@@ -651,7 +654,16 @@ public class Auto {
       for (String s : l.screens.values()) try { l.cdp.call("Page.stopScreencast", Map.of(), s); } catch (Exception e) { /* gone */ }
       on = false; done = true;
     }
+    // A stuck encoder page gets one more try with fresh pages (the frames stay on disk until the job ends)
     void save() throws Exception {
+      try { saveOnce(); }
+      catch (Exception e) {
+        if (!String.valueOf(e.getMessage()).contains("tardó demasiado")) throw e;
+        System.out.println("Tarea " + j.id + ": el vídeo se atascó, lo repito");
+        saveOnce();
+      }
+    }
+    void saveOnce() throws Exception {
       if (frames.isEmpty()) return;
       StringBuilder dbg = new StringBuilder("Fotogramas:"); for (String k : frames.keySet()) dbg.append(' ').append(k).append('=').append(frames.get(k).size()); System.out.println(dbg + " papeles=" + roles + " pantallas=" + l.screens.keySet());
       String g = clave.charAt(0) + "-" + clave.substring(2).toLowerCase().replaceAll("[^a-z0-9]+", "-");
@@ -674,7 +686,7 @@ public class Auto {
         String s = (String) l.cdp.call("Target.attachToTarget", Map.of("targetId", t, "flatten", true), null).get("sessionId");
         open.add(new String[] { t, s, outs, d.toString() });
       }
-      long until = System.currentTimeMillis() + 10 * 60000;
+      long until = System.currentTimeMillis() + 6 * 60000;
       Exception bad = null;
       for (String[] o : open) {
         try {
@@ -682,9 +694,9 @@ public class Auto {
           for (String out : o[2].split(",")) j.hechos.add(out);
         } catch (Exception e) { if (bad == null) bad = e; }
         try { l.cdp.call("Target.closeTarget", Map.of("targetId", o[0]), null); } catch (Exception e) { /* gone */ }
-        try (var w = Files.walk(Path.of(o[3]))) { w.sorted(Comparator.reverseOrder()).forEach((p) -> p.toFile().delete()); }
       }
       if (bad != null) throw bad;
+      for (String[] o : open) try (var w = Files.walk(Path.of(o[3]))) { w.sorted(Comparator.reverseOrder()).forEach((p) -> p.toFile().delete()); }
       // Only the newest recording stays (Luis 03:27): roles this take did not film and the row's old clips are deleted
       Path gd = CatalogoServer.root.resolve("grab/" + g);
       for (String role : new String[] { "mesa", "causa", "tu", "otro" }) if (!j.hechos.contains("grab/" + g + "/" + role + ".webm")) Files.deleteIfExists(gd.resolve(role + ".webm"));

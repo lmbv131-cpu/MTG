@@ -94,16 +94,23 @@ async function fast(d, ts) {
   let lastKey = -1e9, bm = first, n = ts.length;
   // the next picture loads while this one encodes. Luis 21/10: the last picture of a screen can be cut short
   // ("could not be decoded"): that one is left out instead of losing the whole video
-  for (let i = 0; i < n; i++) {
-    const next = i + 1 < n ? bitmap(d, i + 1).catch((e) => { if (i + 1 === n - 1) return null; throw e; }) : null;
-    const t = ts[i] - ts[0];
+  // Luis 25/10 (Acechar, Unir fuerzas): a picture in the middle can't be decoded either; it is skipped (the one
+  // before stays on screen a bit longer) instead of losing the whole video
+  const load = async (k) => { for (; k < n; k++) { const b = await bitmap(d, k).catch(() => null); if (b) return [b, k]; } return null; };
+  let last = 0;
+  for (let i = 0; i < n; ) {
+    const next = i + 1 < n ? load(i + 1) : null;
+    const t = ts[i] - ts[0]; last = i;
     const f = frameOf(bm, t * 1000);
     const key = t - lastKey >= 1000; if (key) lastKey = t; // a seek point every second
     enc.encode(f, { keyFrame: key, ...qopt }); f.close(); bm.close();
     if (bad) throw bad;
     while (enc.encodeQueueSize > 6) await new Promise((r) => setTimeout(r, 5));
-    if (next) { bm = await next; if (!bm) { n = i + 1; break; } }
+    const nx = next ? await next : null;
+    if (!nx) break;
+    [bm, i] = nx;
   }
+  n = last + 1;
   await enc.flush(); enc.close();
   if (bad) throw bad;
   if (!chunks.length) return null;
