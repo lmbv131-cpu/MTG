@@ -223,7 +223,11 @@ class Puerta(BaseHTTPRequestHandler):
         n = int(self.headers.get("Content-Length") or 0)
         cuerpo = self.rfile.read(n) if n else None
         c = http.client.HTTPConnection("127.0.0.1", DESTINO, timeout=600)
-        h = {k: v for k, v in self.headers.items() if k.lower() not in ("host", "connection", "accept-encoding")}
+        h = {k: v for k, v in self.headers.items() if k.lower() not in ("host", "connection", "accept-encoding", "x-espejo-origen")}
+        if ruta == "/espejo-aviso":
+            # Espejo (Luis 2026-10-25): the PC pings the Pi after a recording and the Pi fetches it from where the ping came
+            # from; behind this door the catalog only sees 127.0.0.1, so say who called (any value a caller sent is dropped)
+            h["X-Espejo-Origen"] = self.client_address[0]
         c.request(self.command, self.path, body=cuerpo, headers=h)
         r = c.getresponse()
         tipo = r.getheader("Content-Type", "")

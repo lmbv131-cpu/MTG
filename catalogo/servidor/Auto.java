@@ -460,6 +460,8 @@ public class Auto {
       catch (Exception e) { b64 = (String) cdp.call("Page.captureScreenshot", Map.of("format", "jpeg", "quality", 88), reattach(screen)).get("data"); }
       Path out = CatalogoServer.root.resolve("img/" + name + ".jpg"); Files.createDirectories(out.getParent());
       Files.write(out, Base64.getDecoder().decode(b64)); j.hechos.add("img/" + name + ".jpg");
+      CatalogoServer.Version.marcar(out);
+      CatalogoServer.Espejo.avisar(); // the Raspberry Pi fetches it too
       // the scene goes on as soon as the picture is saved (ventanas.js shotTaken) instead of a fixed wait
       try { eval(cdp, dirSession, "((globalThis.__shotOk = globalThis.__shotOk || {})[" + Json.str(name) + "] = 1, 1)"); } catch (Exception e) { /* it waits its old time */ }
       j.estado = "Captura guardada";

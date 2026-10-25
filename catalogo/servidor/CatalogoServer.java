@@ -3,7 +3,10 @@ import java.io.*;
 import java.net.*;
 import java.nio.file.*;
 import java.util.*;
-import java.util.concurrent.Executors;
+import java.util.concurrent.*;
+import java.util.concurrent.atomic.*;
+import java.net.http.*;
+import java.time.Duration;
 
 /** Serves the catalog folder on the home network (with byte ranges, which iPad Safari needs for video). */
 public class CatalogoServer {
@@ -31,9 +34,11 @@ public class CatalogoServer {
     s.createContext("/auto-motores", Auto::motores);
     s.createContext("/auto-todo", Auto::todo);
     s.createContext("/grabados", CatalogoServer::grabados);
+    s.createContext("/espejo-aviso", Espejo::aviso);
     Runtime.getRuntime().addShutdownHook(new Thread(Auto::stop));
     s.setExecutor(Executors.newFixedThreadPool(16));
     s.start();
+    Espejo.iniciar();
     System.out.println("Catalogo servido desde " + root);
     System.out.println("En este PC:   http://localhost:" + port + "/");
     for (NetworkInterface ni : Collections.list(NetworkInterface.getNetworkInterfaces())) {
@@ -139,6 +144,8 @@ public class CatalogoServer {
       if (last != null) { try { Files.copy(tmp, out, StandardCopyOption.REPLACE_EXISTING); Files.deleteIfExists(tmp); last = null; } catch (IOException e) { last = e; } }
       if (last != null) throw last;
       System.out.println("Guardado " + f);
+      Version.marcar(out);
+      Espejo.avisar();
       send(x, 200, "ok");
     } catch (Throwable e) {
       System.out.println("No se pudo guardar " + f + ": " + e);
@@ -164,9 +171,196 @@ public class CatalogoServer {
     if (Files.isDirectory(ig)) try (DirectoryStream<Path> ds = Files.newDirectoryStream(ig, "*.jpg")) {
       for (Path f : ds) { String n = f.getFileName().toString(); try { im.append(im.length() > 0 ? "," : "").append(jsStr(n.substring(0, n.length() - 4))).append(':').append(Files.getLastModifiedTime(f).toMillis()); } catch (IOException e) { /* gone */ } } }
     b.append(",\"_img\":{").append(im).append('}');
+    // "_ver" / "_imgver": the game version each scene / capture was recorded with (Luis 2026-10-25 11:48: the Raspberry Pi
+    // keeps its own copy when it is from a newer version)
+    StringBuilder gv = new StringBuilder(), iv = new StringBuilder();
+    if (Files.isDirectory(g)) try (DirectoryStream<Path> ds = Files.newDirectoryStream(g)) {
+      for (Path d : ds) { if (!Files.isDirectory(d)) continue; String v = Version.de(d.resolve("mesa.webm")); if (v.isEmpty()) for (String role : new String[] { "causa", "tu", "otro" }) if (v.isEmpty()) v = Version.de(d.resolve(role + ".webm"));
+        if (!v.isEmpty()) gv.append(gv.length() > 0 ? "," : "").append(jsStr(d.getFileName().toString())).append(':').append(jsStr(v)); } }
+    if (Files.isDirectory(ig)) try (DirectoryStream<Path> ds = Files.newDirectoryStream(ig, "*.jpg")) {
+      for (Path f : ds) { String n = f.getFileName().toString(), v = Version.de(f); if (!v.isEmpty()) iv.append(iv.length() > 0 ? "," : "").append(jsStr(n.substring(0, n.length() - 4))).append(':').append(jsStr(v)); } }
+    b.append(",\"_ver\":{").append(gv).append("},\"_imgver\":{").append(iv).append('}');
     x.getResponseHeaders().set("Content-Type", "application/json"); x.getResponseHeaders().set("Cache-Control", "no-store");
     send(x, 200, b.append('}').toString());
   }
+  // ---- Espejo (Luis 2026-10-25 11:35): what is recorded or captured on the PC also ends up on the Raspberry Pi, over the
+  // home network. Pull only, so nothing new accepts files from the network: after a save the PC just pings the Pi
+  // (GET /espejo-aviso?p=<its port>, no data); the Pi then reads the PC's GET /grabados and fetches the new or newer
+  // grab/<a|k>-<id>/<rol>.webm and img/<id>.jpg with the PC's normal GET, written to a temp file and renamed into place.
+  // It also looks every 2 minutes. The Pi never deletes: clips a newer take of the PC no longer has go to grab-anterior/.
+  //   PC (Windows): pings servidor/espejo.txt (one line: http://<pi>:8090, or «no»), else http://mtg-pi:8090.
+  //   Pi (Linux): pulls from servidor/espejo-desde.txt if present (http://<pc>:8090), else from the address its last ping
+  //   came from (home network or Tailscale only), remembered in servidor/espejo-pc.txt. Skips while a game is running.
+  static class Espejo {
+    static final List<String> ROLES = List.of("mesa", "causa", "tu", "otro");
+    static final HttpClient http = HttpClient.newBuilder().proxy(HttpClient.Builder.NO_PROXY).connectTimeout(Duration.ofSeconds(3)).build();
+    static ThreadFactory hilo(String n) { return (r) -> { Thread t = new Thread(r, n); t.setDaemon(true); return t; }; }
+    static final ScheduledExecutorService avisos = Executors.newSingleThreadScheduledExecutor(hilo("espejo-aviso"));
+    static final ExecutorService traer = Executors.newSingleThreadExecutor(hilo("espejo"));
+    static final AtomicBoolean pendiente = new AtomicBoolean(), otra = new AtomicBoolean();
+    static volatile String origen;
+
+    /** First line of servidor/<file> (or the environment variable): an http address, or null for none or «no». */
+    static String linea(String env, String file) {
+      String v = env == null ? null : System.getenv(env);
+      if (v == null) try { v = Files.readAllLines(root.resolve("servidor/" + file)).stream().map(String::trim).filter((l) -> !l.isEmpty() && !l.startsWith("#")).findFirst().orElse(null); } catch (IOException e) { /* not there */ }
+      v = v == null ? null : v.trim().replaceAll("/+$", "");
+      return v == null || v.isEmpty() || v.equalsIgnoreCase("no") ? null : v.matches("https?://[A-Za-z0-9.:\\[\\]-]+") ? v : null;
+    }
+    static boolean win() { return System.getProperty("os.name").toLowerCase().contains("win"); }
+    static void iniciar() {
+      if (recibe()) avisos.scheduleWithFixedDelay(Espejo::tirar, 20, 120, TimeUnit.SECONDS);
+    }
+
+    // ---- PC side: a harmless ping a few seconds after the last save (a «Simular todo» saves many: one ping for a burst)
+    static String destino() {
+      if (System.getenv("CATALOGO_ESPEJO") != null) return linea("CATALOGO_ESPEJO", "-");
+      if (!win()) return null; // the Pi gets servidor/ from the PC through GitHub (espejo.txt too): it never pings itself
+      return Files.exists(root.resolve("servidor/espejo.txt")) ? linea(null, "espejo.txt") : "http://mtg-pi:8090";
+    }
+    static void avisar() {
+      String d = destino();
+      if (d == null || !pendiente.compareAndSet(false, true)) return;
+      avisos.schedule(() -> {
+        pendiente.set(false);
+        // the port the Pi can reach us on: the network door (8090) in front of this server (8088)
+        int p = port == 8088 ? 8090 : port;
+        try { p = Integer.parseInt(System.getenv().getOrDefault("CATALOGO_PUERTA", String.valueOf(p))); } catch (NumberFormatException e) { /* keep */ }
+        try { http.send(HttpRequest.newBuilder(URI.create(d + "/espejo-aviso?p=" + p)).timeout(Duration.ofSeconds(4)).GET().build(), HttpResponse.BodyHandlers.discarding()); }
+        catch (Exception e) { /* the Pi is off or away: it catches up on its own next look */ }
+      }, 3, TimeUnit.SECONDS);
+    }
+
+    // ---- Pi side
+    static boolean recibe() { return !win() || linea("CATALOGO_ESPEJO_DESDE", "espejo-desde.txt") != null; }
+    static String pc() {
+      String f = linea("CATALOGO_ESPEJO_DESDE", "espejo-desde.txt");
+      if (f != null) return f;
+      if (origen == null) origen = linea(null, "espejo-pc.txt");
+      return origen;
+    }
+    static boolean casa(String ip) {
+      if (!ip.matches("\\d{1,3}(\\.\\d{1,3}){3}")) return false;
+      try { InetAddress a = InetAddress.getByName(ip); byte[] b = a.getAddress();
+        if (a.isLoopbackAddress()) return "1".equals(System.getenv("CATALOGO_ESPEJO_PRUEBA")); // only for testing on one machine
+        return a.isSiteLocalAddress() || ((b[0] & 255) == 100 && (b[1] & 0xC0) == 64); // 10/8, 172.16/12, 192.168/16, Tailscale 100.64/10
+      } catch (IOException e) { return false; }
+    }
+    static void aviso(HttpExchange x) throws IOException {
+      if (!recibe()) { send(x, 404, "no"); return; }
+      Headers rq = x.getRequestHeaders();
+      // only straight from the home network or Tailscale: never through Cloudflare, Tailscale Funnel or another proxy
+      for (String h : new String[] { "Cf-Connecting-Ip", "Cf-Ray", "X-Forwarded-For", "X-Real-Ip", "Forwarded", "Tailscale-Funnel-Request" })
+        if (rq.containsKey(h)) { send(x, 403, "no"); return; }
+      InetAddress ra = x.getRemoteAddress().getAddress();
+      String ip = ra.getHostAddress(), fwd = rq.getFirst("X-Espejo-Origen");
+      if (ra.isLoopbackAddress() && fwd != null) ip = fwd.trim(); // set by sin_motor_proxy.py (the 8090 door) to who called it
+      int p = 8090;
+      try { p = Integer.parseInt(Auto.query(x).getOrDefault("p", "8090")); } catch (NumberFormatException e) { /* 8090 */ }
+      if (linea("CATALOGO_ESPEJO_DESDE", "espejo-desde.txt") == null && casa(ip) && p > 0 && p < 65536) {
+        String o = "http://" + ip + ":" + p;
+        if (!o.equals(pc())) { origen = o; try { Files.writeString(root.resolve("servidor/espejo-pc.txt"), o + "\n"); } catch (IOException e) { /* kept in memory */ } System.out.println("Espejo: el PC esta en " + o); }
+      }
+      tirar();
+      send(x, 200, "ok");
+    }
+    static void tirar() { otra.set(true); traer.execute(() -> { if (otra.getAndSet(false)) try { ronda(); } catch (Throwable e) { System.out.println("Espejo: " + e); } }); }
+
+    /** A game (or Estadísticas) running on this Pi: the game says so at /partida-en-curso, asked by the address in config.env. */
+    static boolean partida() {
+      if (win()) return false;
+      String host = System.getenv("PARTIDA_HOST"), pt = System.getenv("PARTIDA_PORT");
+      try { for (String l : Files.readAllLines(Paths.get("/opt/mtglocal/config.env"))) {
+        if (host == null && l.startsWith("IP=")) host = l.substring(3).trim().replace("\"", "");
+        if (pt == null && l.startsWith("PUERTO=")) pt = l.substring(7).trim().replace("\"", ""); } } catch (IOException e) { /* not a Pi */ }
+      try {
+        HttpResponse<String> r = http.send(HttpRequest.newBuilder(URI.create("http://" + (host == null || host.isEmpty() ? "127.0.0.1" : host) + ":" + (pt == null || pt.isEmpty() ? "8080" : pt) + "/partida-en-curso")).timeout(Duration.ofSeconds(2)).build(), HttpResponse.BodyHandlers.ofString());
+        return r.statusCode() == 200 && r.body().trim().equals("1");
+      } catch (Exception e) { return false; }
+    }
+    static long num(Object o) { return o instanceof Number ? ((Number) o).longValue() : 0; }
+    static long mtime(Path f) { try { return Files.getLastModifiedTime(f).toMillis(); } catch (IOException e) { return 0; } }
+    static boolean bajar(String url, Path tmp, long t) {
+      try {
+        HttpResponse<Path> r = http.send(HttpRequest.newBuilder(URI.create(url)).timeout(Duration.ofMinutes(10)).build(), HttpResponse.BodyHandlers.ofFile(tmp));
+        if (r.statusCode() != 200 || Files.size(tmp) == 0) { Files.deleteIfExists(tmp); return false; }
+        Files.setLastModifiedTime(tmp, java.nio.file.attribute.FileTime.fromMillis(t)); // the PC's time: the same file is not fetched again
+        return true;
+      } catch (Exception e) { try { Files.deleteIfExists(tmp); } catch (IOException ignored) { } return false; }
+    }
+    static void poner(Path tmp, Path out) throws IOException {
+      try { Files.move(tmp, out, StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE); }
+      catch (AtomicMoveNotSupportedException e) { Files.move(tmp, out, StandardCopyOption.REPLACE_EXISTING); }
+    }
+    static void ronda() throws Exception {
+      String pc = pc();
+      if (pc == null || partida()) return;
+      HttpResponse<String> r = http.send(HttpRequest.newBuilder(URI.create(pc + "/grabados")).timeout(Duration.ofSeconds(15)).build(), HttpResponse.BodyHandlers.ofString());
+      if (r.statusCode() != 200) return;
+      Map<String, Object> m = Auto.Json.obj(Auto.Json.parse(r.body())), v = Auto.Json.obj(m.get("_v")), im = Auto.Json.obj(m.get("_img")),
+          gv = Auto.Json.obj(m.get("_ver")), iv = Auto.Json.obj(m.get("_imgver"));
+      int n = 0;
+      for (Map.Entry<String, Object> e : m.entrySet()) {
+        String g = e.getKey(); long t = num(v.get(g));
+        if (!g.matches("[ak]-[A-Za-z0-9_-]+") || t <= 0) continue;
+        List<String> rs = new ArrayList<>(); for (Object o : Auto.Json.arr(e.getValue())) if (ROLES.contains(o)) rs.add((String) o);
+        Path d = root.resolve("grab").resolve(g);
+        long mine = 0; for (String role : ROLES) mine = Math.max(mine, mtime(d.resolve(role + ".webm")));
+        // the game version decides first (Luis 2026-10-25 11:48): a take from a newer version on the Pi stays; one from an
+        // older version is replaced; with the same version the newer take wins
+        String pcv = gv.get(g) instanceof String s0 ? s0 : "", miv = "";
+        for (String role : ROLES) if (miv.isEmpty()) miv = Version.de(d.resolve(role + ".webm"));
+        int cmp = Integer.compare(Version.num(pcv), Version.num(miv));
+        if (rs.isEmpty() || cmp < 0 || (cmp == 0 && mine >= t)) continue;
+        if (partida()) return;
+        // all the take's clips or none: a half-fetched take is tried again next time
+        Files.createDirectories(d);
+        Map<String, Path> got = new LinkedHashMap<>();
+        for (String role : rs) { Path tmp = d.resolve(role + ".webm.espejo.part"); if (!bajar(pc + "/grab/" + g + "/" + role + ".webm", tmp, t)) break; got.put(role, tmp); }
+        if (got.size() < rs.size()) { for (Path tmp : got.values()) Files.deleteIfExists(tmp); System.out.println("Espejo: no se pudo traer grab/" + g); continue; }
+        for (Map.Entry<String, Path> gp : got.entrySet()) { poner(gp.getValue(), d.resolve(gp.getKey() + ".webm")); Version.poner(d.resolve(gp.getKey() + ".webm"), pcv); }
+        // only the newest take stays visible (like on the PC); older clips of roles it does not have are kept aside
+        for (String role : ROLES) { Path f = d.resolve(role + ".webm"); if (!rs.contains(role) && Files.exists(f)) { Path a = root.resolve("grab-anterior").resolve(g); Files.createDirectories(a); poner(f, a.resolve(role + ".webm")); } }
+        System.out.println("Espejo: traido grab/" + g + " " + rs); n++;
+      }
+      for (Map.Entry<String, Object> e : im.entrySet()) {
+        String k = e.getKey(); long t = num(e.getValue());
+        if (!k.matches("[A-Za-z0-9_-]+") || t <= 0) continue;
+        Path out = root.resolve("img").resolve(k + ".jpg");
+        String pcv = iv.get(k) instanceof String s1 ? s1 : "";
+        int cmp = Integer.compare(Version.num(pcv), Version.num(Version.de(out)));
+        if (cmp < 0 || (cmp == 0 && mtime(out) >= t)) continue;
+        if (partida()) return;
+        Files.createDirectories(out.getParent());
+        Path tmp = out.resolveSibling(k + ".jpg.espejo.part");
+        if (bajar(pc + "/img/" + k + ".jpg", tmp, t)) { poner(tmp, out); Version.poner(out, pcv); System.out.println("Espejo: traido img/" + k + ".jpg"); n++; }
+      }
+      if (n > 0) System.out.println("Espejo: " + n + " cosas nuevas desde " + pc);
+    }
+  }
+
+  // ---- Version: which game version each recording or capture was made with (Luis 2026-10-25 11:48). Kept next to the
+  // file as <file>.ver («p171»); a file without one counts as the installed version if it is newer than the install,
+  // else as unknown (0).
+  static class Version {
+    static Path ver(Path f) { return f.resolveSibling(f.getFileName() + ".ver"); }
+    static Path txt() { return Auto.juegoDir().resolve("VERSION.txt"); }
+    /** The installed game's version («p171»), or "" when unknown. */
+    static String instalada() {
+      try { String l = Files.readAllLines(txt(), java.nio.charset.StandardCharsets.UTF_8).get(0).replace("\uFEFF", "").trim(); String v = l.split(" ")[0]; return v.matches("p\\d+") ? v : ""; }
+      catch (Exception e) { return ""; }
+    }
+    static int num(String v) { return v != null && v.matches("p\\d{1,6}") ? Integer.parseInt(v.substring(1)) : 0; }
+    static String de(Path f) {
+      if (!Files.exists(f)) return "";
+      try { String v = Files.readString(ver(f)).trim(); if (v.matches("p\\d{1,6}")) return v; } catch (IOException e) { /* none */ }
+      try { if (Files.getLastModifiedTime(f).toMillis() >= Files.getLastModifiedTime(txt()).toMillis()) return instalada(); } catch (IOException e) { /* no game */ }
+      return "";
+    }
+    static void poner(Path f, String v) { try { if (num(v) > 0) Files.writeString(ver(f), v); else Files.deleteIfExists(ver(f)); } catch (IOException e) { /* best effort */ } }
+    static void marcar(Path f) { poner(f, instalada()); }
+  }
+
   static String jsStr(String s) { return "\"" + s.replace("\\", "\\\\").replace("\"", "\\\"").replace("<", "\\u003c") + "\""; }
 
   static void send(HttpExchange x, int code, String msg) throws IOException {
