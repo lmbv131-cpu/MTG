@@ -40,6 +40,78 @@ public class Auto {
     worker.submit(() -> run(j));
     reply(x, 200, j.json());
   }
+  // ---- «Simular todo» kept by the server (Luis 2026-10-24 23:17, Pi: the tablet slept and the page that fed the scenes
+  // stopped at 01:17). The page sends the whole list once; any page can read the progress or stop it.
+  //   POST /auto-todo {"t":"a","items":[{"clave":"a:x","escena":"SC.a_x","ver":"mesa,Luis","viejo":"..","papeles":"..","titulo":".."}]}
+  //   GET  /auto-todo → progress   |   GET /auto-todo?parar=1 → stop after the scenes in progress
+  static class Todo {
+    final String t; final List<Map<String, String>> items; final int n; final long desde = System.currentTimeMillis();
+    final AtomicInteger next = new AtomicInteger(), done = new AtomicInteger(), bad = new AtomicInteger(), running = new AtomicInteger(), seguidos = new AtomicInteger();
+    final List<String> fails = new CopyOnWriteArrayList<>(); final Map<String, Job> now = new ConcurrentHashMap<>();
+    volatile boolean stop, activo = true; volatile long fin; volatile String motivo = "";
+    Todo(String t, List<Map<String, String>> items) { this.t = t; this.items = items; n = items.size(); }
+    String json() {
+      List<Object> ahora = new ArrayList<>();
+      for (Map.Entry<String, Job> e : now.entrySet()) { Job j = e.getValue(); Map<String, Object> m = new LinkedHashMap<>(); m.put("titulo", e.getKey()); m.put("motor", j.lane == null ? 0 : j.lane.n + 1); m.put("guardando", j.saving); m.put("fase", j.fase); ahora.add(m); }
+      Map<String, Object> m = new LinkedHashMap<>();
+      m.put("activo", activo); m.put("t", t); m.put("n", n); m.put("done", done.get()); m.put("bad", bad.get()); m.put("desde", desde); m.put("fin", fin);
+      m.put("parando", stop && activo); m.put("motivo", motivo); m.put("aLaVez", Math.min(2, obj)); m.put("jugando", jugando); m.put("ahora", ahora); m.put("fallos", fails);
+      return Json.str(m);
+    }
+  }
+  static volatile Todo todo;
+  static void todo(HttpExchange x) throws IOException {
+    if (CatalogoServer.cors(x)) return;
+    Todo cur = todo;
+    if ("POST".equals(x.getRequestMethod())) {
+      if (cur != null && cur.activo) { reply(x, 409, cur.json()); return; }
+      Map<String, Object> b; try (InputStream in = x.getRequestBody()) { b = Json.obj(Json.parse(new String(in.readAllBytes(), StandardCharsets.UTF_8))); } catch (Exception e) { reply(x, 400, "{\"error\":\"lista ilegible\"}"); return; }
+      List<Map<String, String>> items = new ArrayList<>();
+      for (Object o : Json.arr(b.get("items"))) {
+        Map<String, Object> it = Json.obj(o); Map<String, String> q = new HashMap<>(); q.put("tipo", "grabar");
+        for (String k : new String[] { "clave", "escena", "ver", "viejo", "papeles", "titulo" }) if (it.get(k) != null) q.put(k, String.valueOf(it.get(k)));
+        if (q.getOrDefault("clave", "").matches("[ak]:[a-z0-9_ '-]+")) items.add(q);
+      }
+      if (items.isEmpty()) { reply(x, 400, "{\"error\":\"lista vacía\"}"); return; }
+      Todo nt = new Todo(String.valueOf(b.getOrDefault("t", "a")), items); todo = nt;
+      worker.submit(() -> todoRun(nt));
+      reply(x, 200, nt.json()); return;
+    }
+    if (cur != null && "1".equals(query(x).get("parar"))) { cur.stop = true; if (cur.motivo.isEmpty()) cur.motivo = "Detenido"; }
+    reply(x, 200, cur == null ? "{\"activo\":false}" : cur.json());
+  }
+  static void todoRun(Todo td) {
+    System.out.println("Simular todo: " + td.n + " escenas");
+    try {
+      while (!td.stop && td.next.get() < td.n) {
+        int target = Math.min(2, objetivo());
+        if (td.running.get() < target) { td.running.incrementAndGet(); worker.submit(() -> todoLane(td)); }
+        Thread.sleep(1000);
+      }
+      while (td.running.get() > 0) Thread.sleep(1000);
+    } catch (InterruptedException e) { /* closing */ }
+    td.activo = false; td.fin = System.currentTimeMillis();
+    System.out.println("Simular todo: " + td.done.get() + "/" + td.n + (td.bad.get() > 0 ? ", " + td.bad.get() + " no salieron" : "") + (td.motivo.isEmpty() ? "" : " (" + td.motivo + ")"));
+  }
+  static void todoLane(Todo td) {
+    try {
+      while (!td.stop) {
+        int i = td.next.getAndIncrement(); if (i >= td.n) break;
+        Map<String, String> q = new HashMap<>(td.items.get(i)); String title = q.getOrDefault("titulo", q.get("clave")); q.remove("titulo");
+        Job j = new Job(seq.incrementAndGet(), q); jobs.put(j.id, j); td.now.put(title, j);
+        run(j);
+        while (!j.fin) Thread.sleep(500); // its videos are still being saved
+        td.now.remove(title); td.done.incrementAndGet();
+        if (j.ok) td.seguidos.set(0);
+        else {
+          td.bad.incrementAndGet(); td.fails.add(title + ": " + j.estado);
+          // A game started (the door blocks the motors) or the motors broke: don't burn the whole list on failures
+          if (td.seguidos.incrementAndGet() >= 3) { td.stop = true; td.motivo = "Parado tras 3 fallos seguidos: " + j.estado; }
+        }
+        if (td.running.get() > Math.min(2, objetivo())) break;
+      }
+    } catch (InterruptedException e) { /* closing */ } finally { td.running.decrementAndGet(); }
+  }
   // ---- HTTP: /auto-vivo?id=<job>&p=mesa → the latest picture of that screen (servidor/vivo.html shows them while a job plays)
   static void vivo(HttpExchange x) throws IOException {
     if (CatalogoServer.cors(x)) return;

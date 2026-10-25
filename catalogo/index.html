@@ -701,7 +701,66 @@ function simList(t) {
   return kwList().map((k) => 'k:' + k.id).filter((k) => { const id = k.slice(2); return !noSim(k) && (KV[id] || ESC[id]); });
 }
 const dura = (ms) => { const s = Math.round(ms / 1000); return s >= 3600 ? Math.floor(s / 3600) + ' h ' + Math.round((s % 3600) / 60) + ' min' : s >= 60 ? Math.floor(s / 60) + ' min ' + String(s % 60).padStart(2, '0') + ' s' : s + ' s'; };
+// «Simular todo» lives in this page: if the tab reloads or the tablet sleeps the run dies (Luis 2026-10-24 23:17, Pi).
+// Its progress is kept here so the page says it was cut and the next «Simular todo» does only what is still missing.
+const SIMKEY = 'cat-simtodo';
+const simRun = (v) => { try { if (v === undefined) return JSON.parse(localStorage.getItem(SIMKEY) || 'null'); if (v === null) localStorage.removeItem(SIMKEY); else localStorage.setItem(SIMKEY, JSON.stringify(v)); } catch (e) {} return null; };
+// The server may still be playing scenes for a page that lost its link (Pi 01:02: the game restarted under /catalogo)
+const ultimaGrab = () => Math.max(0, ...Object.values(GRAB._v || {}).map(Number).filter((x) => x > 0));
+const enMarcha = () => Date.now() - ultimaGrab() < 4 * 60000;
+function simCortado() {
+  const r = simRun(); if (!r || !r.t || SALL.on) return;
+  const out = document.getElementById('sall-' + r.t); if (!out) return;
+  if (enMarcha()) { out.textContent = `Parece que «Simular todo» sigue en marcha en el servidor (última escena grabada hace ${Math.max(1, Math.round((Date.now() - ultimaGrab()) / 60000))} min, iba por ${r.done || 0}/${r.n}). Esta página no ve su avance: no la lances otra vez; las escenas nuevas van apareciendo en la tabla.`; setTimeout(async () => { await loadGrab(); rerender(); simCortado(); }, 60000); return; }
+  out.textContent = `La última «Simular todo» se cortó en ${r.done || 0}/${r.n} (empezó el ${fecha(r.desde)}; se cerró o se recargó la página). Pulsa «Simular todo» para seguir: solo hará las que faltan.`;
+}
+// Server-kept «Simular todo» (Auto.todo): the page only shows it, so a sleeping tablet or a reload doesn't stop it
+async function simServidor(t, btn, ks) {
+  const items = ks.map((key) => { const it = item(key), roles = all4(it && it.v ? it.v.roles : DEFROLES);
+    return { clave: key, escena: escena(key), ver: ['mesa', ...new Set(['causa', 'tu', 'otro'].map((r) => roles[r]).filter(Boolean))].join(','), viejo: viejo(it), papeles: papeles(roles), titulo: it ? it.title : key }; });
+  let r; try { r = await fetch(SRV + '/auto-todo', { method: 'POST', headers: { 'Content-Type': 'application/json; charset=utf-8' }, body: JSON.stringify({ t, items }) }); } catch (e) { return false; }
+  if (r.status === 404 || r.status === 405) return false; // older catalog server: the page keeps the list itself
+  if (r.status === 503) { const j = await r.json().catch(() => ({})); document.getElementById('sall-' + t).textContent = j.estado || NOSRV; return true; }
+  const j = await r.json().catch(() => ({})); simRun(null);
+  simSeguir(j.t || t); return true;
+}
+async function simSeguir(t) {
+  const btn = document.querySelector(`[data-sall="${t}"]`), out = document.getElementById('sall-' + t); if (!btn || !out) return;
+  const bar = btn.parentElement.querySelector('.sbar'), fill = bar.querySelector('i');
+  SALL.on = t; SALL.srv = true; SALL.stop = false; btn.textContent = 'Detener'; bar.hidden = false;
+  document.querySelectorAll('[data-sall]').forEach((b) => { b.disabled = b !== btn; });
+  let j = null, lastDone = -1, fallos = 0;
+  for (;;) {
+    try { const r = await fetch(SRV + '/auto-todo', { cache: 'no-store' }); if (!r.ok) throw new Error(r.status); j = await r.json(); fallos = 0; }
+    catch (e) { if (++fallos >= 3) out.textContent = 'Sin conexión con el catálogo; reintentando… (la simulación sigue en el servidor)'; await new Promise((ok) => setTimeout(ok, 3000)); continue; }
+    if (!j.activo) break;
+    if (j.done !== lastDone) { lastDone = j.done; await loadGrab(); GRAB.t = Date.now(); rerender(); }
+    const per = j.done ? (Date.now() - j.desde) / j.done : 0, ahora = (j.ahora || []).filter((a) => !a.guardando), guard = (j.ahora || []).length - ahora.length;
+    out.textContent = `${j.done}/${j.n} listas` + (guard ? ` · ${guard} guardando vídeos` : '') + (per ? ` · ${dura(per)} por escena · faltan unos ${dura(per * (j.n - j.done))}` : '')
+      + (j.jugando ? ' · de 1 en 1 (estás jugando)' : j.aLaVez > 1 ? ` · ${j.aLaVez} a la vez` : '') + (j.bad ? ` · ${j.bad} no salieron` : '')
+      + (j.parando ? ' · terminando las que están en marcha…' : ahora.length ? ` · ahora: ${ahora.map((a) => a.motor ? `${a.titulo} (motor ${a.motor})` : a.titulo).join(', ')}` : '')
+      + ' · sigue aunque cierres esta página';
+    fill.style.width = (100 * (j.done + 0.6 * guard) / j.n) + '%';
+    await new Promise((ok) => setTimeout(ok, 2000));
+  }
+  await loadGrab(); GRAB.t = Date.now(); rerender();
+  out.textContent = (j.done < j.n ? `Detenido en ${j.done}/${j.n}` : `Listo: ${j.n}/${j.n}`) + ` en ${dura((j.fin || Date.now()) - j.desde)}` + (j.motivo && j.motivo !== 'Detenido' ? ` · ${j.motivo}` : '') + (j.bad ? ` · ${j.bad} no salieron (pasa el ratón para ver cuáles)` : ' · todos los vídeos son nuevos');
+  out.title = (j.fallos || []).join('\n');
+  SALL.on = null; SALL.srv = false; btn.textContent = 'Simular todo';
+  document.querySelectorAll('[data-sall]').forEach((b) => { b.disabled = false; });
+}
+// On opening the page: show a run the server is playing, or the end of the last one
+async function simAlAbrir() {
+  let r; try { r = await fetch(SRV + '/auto-todo', { cache: 'no-store' }); } catch (e) { simCortado(); return; }
+  if (r.status === 404) { simCortado(); return; }
+  const j = r.ok ? await r.json().catch(() => null) : null; if (!j || j.activo === undefined) return;
+  simRun(null);
+  if (j.activo) { simSeguir(j.t); return; }
+  const out = document.getElementById('sall-' + j.t);
+  if (out && j.fin && Date.now() - j.fin < 12 * 3600000) out.textContent = `Último «Simular todo»: ${j.done < j.n ? 'detenido en ' + j.done + '/' + j.n : 'listo, ' + j.n + '/' + j.n} (acabó el ${fecha(j.fin)})` + (j.motivo && j.motivo !== 'Detenido' ? ' · ' + j.motivo : '') + (j.bad ? ` · ${j.bad} no salieron` : '');
+}
 async function simAll(t, btn) {
+  if (SALL.on && SALL.srv) { btn.textContent = 'Deteniendo…'; try { await fetch(SRV + '/auto-todo?parar=1', { cache: 'no-store' }); } catch (e) {} return; }
   if (SALL.on) { SALL.stop = true; btn.textContent = 'Deteniendo…'; return; }
   const out = document.getElementById('sall-' + t), bar = btn.parentElement.querySelector('.sbar'), fill = bar.querySelector('i');
   if (!(ONSRV || LOCAL)) { out.textContent = NOSRV; return; }
@@ -709,7 +768,17 @@ async function simAll(t, btn) {
   // Run from the PC test panel (SIMULAR-TODO.ps1, Luis 2026-10-21 05:50): only the listed rows, or only rows not recorded since «desde»
   const SQ = globalThis.SIMTODO;
   if (SQ) { if (SQ.solo.length) ks = ks.filter((k) => SQ.solo.includes(k)); if (SQ.desde) ks = ks.filter((k) => !(((GRAB._v || {})[gkey(k)] || 0) >= SQ.desde)); }
-  const n = ks.length; if (!n) { out.textContent = 'Listo: no queda ninguna escena pendiente'; return; }
+  // A cut run of this tab: skip the rows recorded since it started (2 min margin for the tablet's clock)
+  let prev = !SQ && simRun();
+  // ...or a server run of this tab that stopped before the end (server closed, 3 failures, «Detener»)
+  if (!SQ && !prev) try { const r = await fetch(SRV + '/auto-todo', { cache: 'no-store' }); const j = r.ok ? await r.json() : null; if (j && j.t === t && !j.activo && j.fin && j.done < j.n && Date.now() - j.fin < 12 * 3600000) prev = { t, desde: j.desde }; } catch (e) {}
+  const sigue = prev && prev.t === t && prev.desde;
+  if (sigue) { await loadGrab();
+    if (enMarcha() && !(SALL.ok2 && Date.now() - SALL.ok2 < 15000)) { SALL.ok2 = Date.now(); out.textContent = 'El servidor grabó una escena hace menos de 4 minutos: puede que «Simular todo» siga en marcha. Si estás seguro de que no, vuelve a pulsar «Simular todo» en los próximos 15 segundos.'; return; }
+    ks = ks.filter((k) => !(((GRAB._v || {})[gkey(k)] || 0) >= prev.desde - 120000)); }
+  const n = ks.length; if (!n) { simRun(null); out.textContent = 'Listo: no queda ninguna escena pendiente'; return; }
+  if (!SQ && await simServidor(t, btn, ks)) return;
+  if (!SQ) simRun({ t, desde: sigue ? prev.desde : Date.now(), n, done: 0 });
   SALL.on = t; SALL.stop = false;
   document.querySelectorAll('[data-sall]').forEach((b) => { b.disabled = b !== btn; }); btn.textContent = 'Detener';
   bar.hidden = false; fill.style.width = '0';
@@ -734,6 +803,7 @@ async function simAll(t, btn) {
         now.delete(title); saving.delete(title); done++;
         if (j.ok) { await loadGrab(); GRAB.t = Date.now(); rerender(); }
         else { bad++; fails.push(title + ': ' + j.estado); if (j.estado === NOSRV) SALL.stop = true; }
+        if (!SQ) { const r = simRun(); if (r) simRun({ ...r, done }); }
         target = await cuantos(); show(); spawn();
       }
     } finally { running--; }
@@ -742,6 +812,7 @@ async function simAll(t, btn) {
   spawn();
   while (going.size) await Promise.race([...going]).catch(() => {});
   const stopped = done < n;
+  if (!SQ) simRun(null);
   out.textContent = (stopped ? `Detenido en ${done}/${n}` : `Listo: ${n}/${n}`) + ` en ${dura(Date.now() - t0)}` + (bad ? ` · ${bad} no salieron (pasa el ratón para ver cuáles)` : ' · todos los vídeos son nuevos');
   out.title = fails.join('\n');
   SALL.on = null; btn.textContent = 'Simular todo';
@@ -816,7 +887,7 @@ document.getElementById('vq').addEventListener('input', (e) => { ui.vq = e.targe
 document.getElementById('kq').addEventListener('input', (e) => { ui.kq = e.target.value.trim(); renderKw(); });
 
 renderRows(); renderWindows(); renderKw();
-Promise.all([loadGrab(), loadVer()]).then(([ok]) => { if ((ok && Object.keys(GRAB).length) || VER.desde) rerender(); });
+Promise.all([loadGrab(), loadVer()]).then(([ok]) => { if ((ok && Object.keys(GRAB).length) || VER.desde) rerender(); simAlAbrir(); });
 try { const t = localStorage.getItem('cat-tab'); if (t === 'ven' || t === 'kw' || t === 'fin') tab(t); } catch (e) {}
 // ?simtodo=a|fin|k&n=1|2&desde=<ms>&solo=a:id,a:id → «Simular todo» starts by itself; the page title carries the progress
 // («SIMTODO …», then «SIMTODO FIN …») so SIMULAR-TODO.ps1 can read it from the browser's /json list

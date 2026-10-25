@@ -29,6 +29,7 @@ public class CatalogoServer {
     s.createContext("/auto-estado", Auto::estado);
     s.createContext("/auto-vivo", Auto::vivo);
     s.createContext("/auto-motores", Auto::motores);
+    s.createContext("/auto-todo", Auto::todo);
     s.createContext("/grabados", CatalogoServer::grabados);
     Runtime.getRuntime().addShutdownHook(new Thread(Auto::stop));
     s.setExecutor(Executors.newFixedThreadPool(16));
