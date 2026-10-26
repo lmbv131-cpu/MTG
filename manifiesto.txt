@@ -1,4 +1,4 @@
-d92e7e2bb6de89d3f1ef26ae7b7de0e75e7b11e9 1200282 app.jar
+8405d40f986a0357ae074c50ab3a314a62b21c4d 1205645 app.jar
 0039e64c319032b20adb7f8f3380e1315c3954c7 20228 engine/res/ai/Default.ai
 977d7b40a160e3000b0fd25f22a4b7253186f32b 22509 engine/res/blockdata/blocks.txt
 d228b28e430bdacd5367d04b562679bab4950543 33959 engine/res/blockdata/boosters-special.txt
@@ -3180,4 +3180,4 @@ c194b73e76090177bc57adf826c68996635d1873 111 engine/res/tokenscripts/wu_2_2_knig
 8e32acef8424174b3b2a10ed35b267481390f2a1 315 engine/res/tokenscripts/yellow_hat.txt
 5e6f12e1de81b14500de46e4410596e88485c9c3 512 engine/res/tokenscripts/zabu.txt
 70134148a29b5da1263c0a8a820b80926ce4011f 101 engine/res/tokenscripts/zeppelin.txt
-02ece5a915f2698894765f08be201f4d81a29c21 26259855 motor.jar
+1876b328d3fdf6031f70e252a486e896d663cd04 26261008 motor.jar
