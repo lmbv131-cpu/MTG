@@ -159,14 +159,15 @@ W.bloquear = async () => {
 //  - Gifted Aetherborn 2/3 deathtouch, blocked by Grizzly Bears and Runeclaw Bear (deathtouch: 1 is lethal to each)
 //  - Hill Giant 3/3, blocked by Siege Mastodon 3/5 alone
 //  - Risen Reef 1/1, not blocked («sin bloquear · 1 daño»)
+//  - Luis 26/10: Craw Wurm 6/4 blocked by 6 creatures 1/1, to see a row with many blockers
 W.danio = async () => {
-  await scene({ active: 'p1', p0battlefield: LAN + ';Darksteel Angel;Avenger of Zendikar;Grizzly Bears;Runeclaw Bear;Siege Mastodon',
-    p1battlefield: 'Forest;Forest;Forest;Island;Island;Mountain;Command Tower;Rampaging Hippo;Gifted Aetherborn;Hill Giant;Risen Reef' }, 'Pablo', 'MAIN1');
+  await scene({ active: 'p1', p0battlefield: LAN + ';Darksteel Angel;Avenger of Zendikar;Grizzly Bears;Runeclaw Bear;Siege Mastodon;Llanowar Elves;Elvish Mystic;Fyndhorn Elves;Savannah Lions;Raging Goblin;Eager Cadet',
+    p1battlefield: 'Forest;Forest;Forest;Island;Island;Mountain;Command Tower;Rampaging Hippo;Gifted Aetherborn;Hill Giant;Risen Reef;Craw Wurm' }, 'Pablo', 'MAIN1');
   const id = (n) => cid('Pablo', 'battlefield', n, 'Pablo');
-  const H = await id('Rampaging Hippo'), G = await id('Gifted Aetherborn'), HG = await id('Hill Giant'), R = await id('Risen Reef');
-  await toAttack('Pablo'); await send('Pablo', { type: 'attackAssign', cards: [H, G, HG, R], player: 0 }); await wait(1200); await send('Pablo', { type: 'ok' });
+  const H = await id('Rampaging Hippo'), G = await id('Gifted Aetherborn'), HG = await id('Hill Giant'), R = await id('Risen Reef'), CW = await id('Craw Wurm');
+  await toAttack('Pablo'); await send('Pablo', { type: 'attackAssign', cards: [H, G, HG, R, CW], player: 0 }); await wait(1200); await send('Pablo', { type: 'ok' });
   await log('Luis', 'danio tras atacar'); await toBlock('Luis'); await log('Luis', 'danio bloqueo');
-  const blocks = [['Darksteel Angel', H], ['Avenger of Zendikar', H], ['Grizzly Bears', G], ['Runeclaw Bear', G], ['Siege Mastodon', HG]];
+  const blocks = [['Darksteel Angel', H], ['Avenger of Zendikar', H], ['Grizzly Bears', G], ['Runeclaw Bear', G], ['Siege Mastodon', HG], ['Llanowar Elves', CW], ['Elvish Mystic', CW], ['Fyndhorn Elves', CW], ['Savannah Lions', CW], ['Raging Goblin', CW], ['Eager Cadet', CW]];
   for (const [b, a] of blocks) { await send('Luis', { type: 'blockAssign', blocker: await cid('Luis', 'battlefield', b), attacker: a }); await wait(700); }
   await log('Luis', 'danio bloqueado'); await send('Luis', { type: 'ok' });
   // Until Pablo's tablet shows the damage list (p167: .g5l); the others pass or confirm their blocks
