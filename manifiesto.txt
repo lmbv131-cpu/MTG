@@ -1,4 +1,4 @@
-db78f19bb636ae4d5a57386a427fc38d8232902a 1193980 app.jar
+fce7eda328860dfa39087d928708770321b37dba 1194001 app.jar
 0039e64c319032b20adb7f8f3380e1315c3954c7 20228 engine/res/ai/Default.ai
 977d7b40a160e3000b0fd25f22a4b7253186f32b 22509 engine/res/blockdata/blocks.txt
 d228b28e430bdacd5367d04b562679bab4950543 33959 engine/res/blockdata/boosters-special.txt
