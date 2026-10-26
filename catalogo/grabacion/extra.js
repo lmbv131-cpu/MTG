@@ -370,6 +370,9 @@ const O = (id, card, o = {}) => { KWO[id] = () => kwCast({ id, card, ...o }); };
 O('haste', 'Raging Goblin', { roles: R3, after: toAttack(['Raging Goblin']) });
 O('flashback', 'Think Twice', { zone: 'graveyard', gy: 'Think Twice', hand: '', lib: 'Plains;Island;Forest' });
 O('crew', 'Peacewalker Colossus', { zone: 'battlefield', bf: 'Peacewalker Colossus;Tower Gargoyle', hand: '' });
+// Exploit: the app's scene looked the Gargoyle up by its English name and found nothing (Simular todo 2026-10-25:
+// «Cannot read properties of undefined (reading 'id')»); cid() finds it whatever language the names come in
+O('exploit', 'Silumgar Butcher', { bf: 'Tower Gargoyle', later: [{ reply: { index: 0 } }, { picks: [{ card: 0 }] }], pre: async () => { globalThis.LSTEPS = [{ reply: { index: 0 } }, { picks: [{ card: await cid('Luis', 'battlefield', 'Tower Gargoyle') }] }]; } });
 
 // ---------------------------------------------------------------- which rows can be simulated, and why the others can't
 globalThis.EXTRA_NO = {
