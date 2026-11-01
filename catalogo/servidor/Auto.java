@@ -83,7 +83,7 @@ public class Auto {
       List<Map<String, String>> items = new ArrayList<>();
       for (Object o : Json.arr(b.get("items"))) {
         Map<String, Object> it = Json.obj(o); Map<String, String> q = new HashMap<>(); q.put("tipo", it.get("ventana") != null ? "captura" : "grabar");
-        for (String k : new String[] { "clave", "escena", "ver", "viejo", "papeles", "titulo", "ventana" }) if (it.get(k) != null) q.put(k, String.valueOf(it.get(k)));
+        for (String k : new String[] { "clave", "escena", "ver", "viejo", "papeles", "titulo", "ventana", "anim" }) if (it.get(k) != null) q.put(k, String.valueOf(it.get(k)));
         if (q.get("tipo").equals("captura") ? q.get("ventana").matches("[a-z0-9-]+") : q.getOrDefault("clave", "").matches("[ak]:[a-z0-9_ '-]+")) items.add(q);
       }
       if (items.isEmpty()) { reply(x, 400, "{\"error\":\"lista vacía\"}"); return; }
@@ -509,8 +509,11 @@ public class Auto {
       }
       // Scene names come as SC.x, KW.x or W.x: a lookup that understands all three, whatever sim.html expects
       eval(cdp, sim, "(() => { globalThis.W = globalThis.W || {}; W.listo = async () => {}; const t = globalThis.SC || {}; let warm = false; globalThis.SC = new Proxy(t, { get(o, k) { if (typeof k !== 'string') return o[k]; const i = k.indexOf('.'); if (i < 0 || k in o) return o[k]; const ns = k.slice(0, i), id = k.slice(i + 1); if (ns === 'SC') return o[id]; if (ns === 'W') return W[id]; if (ns === 'KW' && globalThis.KW && (KW[id] || (globalThis.KWO && KWO[id]))) return async () => { if (!warm && KW.warm) { warm = true; await KW.warm(); } return ((globalThis.KWO && KWO[id]) || KW[id])(); }; return undefined; } }); return 1; })()");
-      // fxq=alta (animations v3, 2026-11-01): a browser without a screen would turn the effects down to low quality (no particles)
-      eval(cdp, sim, "(() => { try { localStorage.setItem('mtgLang', 'es'); localStorage.setItem('fxq', 'alta'); } catch (e) {} return 1; })()");
+      // fxq (animations v3, 2026-11-01): a browser without a screen would turn the effects down to low quality (no particles).
+      // Luis 2026-11-01 09:15: the catalog films either style of the app's Configuración → Animaciones: «Mejorada»
+      // (forced high) or «Simple» (low: the same moves without particles)
+      String fxq = "simple".equals(j.q.get("anim")) ? "baja" : "alta";
+      eval(cdp, sim, "(() => { try { localStorage.setItem('mtgLang', 'es'); localStorage.setItem('fxq', '" + fxq + "'); localStorage.setItem('mtgAnim', '" + ("baja".equals(fxq) ? "simple" : "mejorada") + "'); } catch (e) {} return 1; })()");
       eval(cdp, sim, "document.getElementById('go').click(), 1");
       long start = System.currentTimeMillis(); String last = "";
       for (;;) {
@@ -668,6 +671,7 @@ public class Auto {
       if (frames.isEmpty()) return;
       StringBuilder dbg = new StringBuilder("Fotogramas:"); for (String k : frames.keySet()) dbg.append(' ').append(k).append('=').append(frames.get(k).size()); System.out.println(dbg + " papeles=" + roles + " pantallas=" + l.screens.keySet());
       String g = clave.charAt(0) + "-" + clave.substring(2).toLowerCase().replaceAll("[^a-z0-9]+", "-");
+      String suf = "simple".equals(j.q.get("anim")) ? "-simple" : ""; // «Simple» animations: mesa-simple.webm next to mesa.webm
       // every screen's encoder page runs at the same time (each one plays its clip in real time)
       List<String[]> open = new ArrayList<>();
       for (String screen : frames.keySet()) {
@@ -682,7 +686,7 @@ public class Auto {
         StringBuilder idx = new StringBuilder("[");
         for (int i = 0; i < ts.size(); i++) idx.append(i > 0 ? "," : "").append(ts.get(i)[0]);
         Files.writeString(d.resolve("t.json"), idx.append("]").toString());
-        String outs = String.join(",", rs.stream().map((r) -> "grab/" + g + "/" + r + ".webm").toList());
+        String outs = String.join(",", rs.stream().map((r) -> "grab/" + g + "/" + r + suf + ".webm").toList());
         String t = (String) l.cdp.call("Target.createTarget", Map.of("url", "http://127.0.0.1:" + CatalogoServer.port + "/servidor/enc.html?d=" + enc(dir) + "&out=" + enc(outs)), null).get("targetId");
         String s = (String) l.cdp.call("Target.attachToTarget", Map.of("targetId", t, "flatten", true), null).get("sessionId");
         open.add(new String[] { t, s, outs, d.toString() });
@@ -700,9 +704,9 @@ public class Auto {
       for (String[] o : open) try (var w = Files.walk(Path.of(o[3]))) { w.sorted(Comparator.reverseOrder()).forEach((p) -> p.toFile().delete()); }
       // Only the newest recording stays (Luis 03:27): roles this take did not film and the row's old clips are deleted
       Path gd = CatalogoServer.root.resolve("grab/" + g);
-      for (String role : new String[] { "mesa", "causa", "tu", "otro" }) if (!j.hechos.contains("grab/" + g + "/" + role + ".webm")) Files.deleteIfExists(gd.resolve(role + ".webm"));
+      for (String role : new String[] { "mesa", "causa", "tu", "otro" }) if (!j.hechos.contains("grab/" + g + "/" + role + suf + ".webm")) Files.deleteIfExists(gd.resolve(role + suf + ".webm"));
       String old = j.q.getOrDefault("viejo", "");
-      if (old.matches("vid/(kw/)?[A-Za-z0-9_-]+")) for (String role : new String[] { "mesa", "causa", "tu", "otro" }) Files.deleteIfExists(CatalogoServer.root.resolve(old + "/" + role + ".mp4"));
+      if (suf.isEmpty() && old.matches("vid/(kw/)?[A-Za-z0-9_-]+")) for (String role : new String[] { "mesa", "causa", "tu", "otro" }) Files.deleteIfExists(CatalogoServer.root.resolve(old + "/" + role + ".mp4"));
     }
   }
   static String buscarNavegador() {

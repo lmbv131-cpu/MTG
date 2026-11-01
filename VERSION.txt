@@ -1,1 +1,1 @@
-p192 · IA Difícil (red v150, elegible por rival; Fácil por defecto) + Gigante de dos cabezas (beta, solo contra la IA) + rediseño (tandas 1 y 2) + respuesta al tocar, mano en abanico, sonidos + arreglos de mazos (comandante al importar, 100 cartas)
+p193 · p192 + sala (nombre, configuración, tipo de partida) + Configuración → Animaciones Mejorada/Simple

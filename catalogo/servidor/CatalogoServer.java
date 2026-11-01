@@ -128,7 +128,7 @@ public class CatalogoServer {
     if (cors(x)) return;
     String q = x.getRequestURI().getRawQuery(), f = null;
     if (q != null) for (String kv : q.split("&")) if (kv.startsWith("f=")) f = URLDecoder.decode(kv.substring(2), "UTF-8");
-    if (!"POST".equals(x.getRequestMethod()) || f == null || !f.matches("img/[a-z0-9-]+\\.jpg|grab/[ak]-[a-z0-9_-]+/(mesa|causa|tu|otro)\\.webm")) { send(x, 400, "no"); return; }
+    if (!"POST".equals(x.getRequestMethod()) || f == null || !f.matches("img/[a-z0-9-]+\\.jpg|grab/[ak]-[a-z0-9_-]+/(mesa|causa|tu|otro)(-simple)?\\.webm")) { send(x, 400, "no"); return; }
     Path out = root.resolve(f).normalize();
     if (!out.startsWith(root)) { send(x, 403, "no"); return; }
     // Windows can hold a just-written file (antivirus, a video still playing it): retry instead of dropping the connection
@@ -155,17 +155,22 @@ public class CatalogoServer {
   // GET /grabados -> {"a-lanzar":["mesa","tu"],...}
   static void grabados(HttpExchange x) throws IOException {
     if (cors(x)) return;
-    StringBuilder b = new StringBuilder("{"), ver = new StringBuilder();
+    StringBuilder b = new StringBuilder("{"), ver = new StringBuilder(), vers = new StringBuilder();
     Path g = root.resolve("grab");
+    // roles «mesa»… and, filmed with the «Simple» animations (Luis 2026-11-01), «mesa-simple»…
     if (Files.isDirectory(g)) try (DirectoryStream<Path> ds = Files.newDirectoryStream(g)) {
-      for (Path d : ds) { if (!Files.isDirectory(d)) continue; StringBuilder r = new StringBuilder();
-        for (String role : new String[] { "mesa", "causa", "tu", "otro" }) if (Files.exists(d.resolve(role + ".webm"))) r.append(r.length() > 0 ? "," : "").append('"').append(role).append('"');
+      for (Path d : ds) { if (!Files.isDirectory(d)) continue; StringBuilder r = new StringBuilder(); long t = 0, ts = 0;
+        for (String suf : new String[] { "", "-simple" }) for (String role : new String[] { "mesa", "causa", "tu", "otro" }) {
+          Path f = d.resolve(role + suf + ".webm"); if (!Files.exists(f)) continue;
+          r.append(r.length() > 0 ? "," : "").append('"').append(role).append(suf).append('"');
+          try { long m = Files.getLastModifiedTime(f).toMillis(); if (suf.isEmpty()) t = Math.max(t, m); else ts = Math.max(ts, m); } catch (IOException e) { /* gone */ } }
         if (r.length() > 0) { b.append(b.length() > 1 ? "," : "").append('"').append(d.getFileName()).append("\":[").append(r).append(']');
-          long t = 0; for (String role : new String[] { "mesa", "causa", "tu", "otro" }) try { t = Math.max(t, Files.getLastModifiedTime(d.resolve(role + ".webm")).toMillis()); } catch (IOException e) { /* not there */ }
-          ver.append(ver.length() > 0 ? "," : "").append('"').append(d.getFileName()).append("\":").append(t); } }
+          if (t > 0) ver.append(ver.length() > 0 ? "," : "").append('"').append(d.getFileName()).append("\":").append(t);
+          if (ts > 0) vers.append(vers.length() > 0 ? "," : "").append('"').append(d.getFileName()).append("\":").append(ts); } }
     }
-    // "_v": when each scene's videos were last saved, so the page asks for a new file only when it changed
+    // "_v": when each scene's videos were last saved, so the page asks for a new file only when it changed ("_vs": the «Simple» ones)
     b.append(b.length() > 1 ? "," : "").append("\"_v\":{").append(ver).append('}');
+    b.append(",\"_vs\":{").append(vers).append('}');
     // "_img": when each window capture (img/<id>.jpg) was last saved, so the page can mark the ones from an older game version
     StringBuilder im = new StringBuilder(); Path ig = root.resolve("img");
     if (Files.isDirectory(ig)) try (DirectoryStream<Path> ds = Files.newDirectoryStream(ig, "*.jpg")) {

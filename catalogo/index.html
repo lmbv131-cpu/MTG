@@ -25,6 +25,10 @@ header { display: flex; flex-wrap: wrap; gap: 14px 28px; align-items: end; justi
 .tabs { display: flex; gap: 4px; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 4px; }
 .tabs button { font: 500 14px var(--f-body); color: var(--muted); background: none; border: 0; padding: 8px 16px; border-radius: 7px; cursor: pointer; }
 .tabs button[aria-selected="true"] { background: var(--panel2); color: var(--gold); }
+/* Luis 2026-11-01: which animations the catalog shows and films (the app's Configuración → Animaciones) */
+.animsel { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.animsel .al { font: 600 12px var(--f-body); letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
+.animsel .tabs button { min-height: 36px; }
 button:focus-visible, tr:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
 
 .filters { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin: 20px 0 12px; }
@@ -178,6 +182,7 @@ code { font: 12.5px var(--f-mono); color: var(--gold); }
       <button id="t-kw" role="tab" aria-selected="false">Palabras clave</button>
       <button id="t-fin" role="tab" aria-selected="false">Derrotas y victorias</button>
     </div>
+    <div class="animsel"><span class="al">Animaciones</span><div class="tabs" role="radiogroup" aria-label="Animaciones"><button data-anim="mejorada" role="radio" title="Con partículas y ambiente (la de por defecto en la app)">Mejorada</button><button data-anim="simple" role="radio" title="Los mismos movimientos, sin partículas ni ambiente">Simple</button></div></div>
   </header>
 
   <section id="p-acc">
@@ -269,7 +274,7 @@ const ui = { cat: null, q: '', vq: '', kq: '', kf: null, sel: null };
 const VAL = typeof VALIAS !== 'undefined' ? VALIAS : {};
 const nc = (t) => String(t ?? '').replace(/\b(3b|4b\d?|4[c-f]|5b|8[b-f]|10b|12b)\b|(?<=la )(5|8c)\b/g, (k, x, y) => { const v = VENTANAS[VAL[k] || k]; return v ? (y ? 'ventana «' : '«') + v[0] + '»' : k; });
 const tick = (b) => b ? '<span class="ok" aria-label="Sí">✓</span>' : '<span class="no" aria-label="No">✕</span>';
-const has = (v, r) => !!v && (r === 'mesa' || !!v.roles[r]);
+const has = (v, r) => ANIM !== 'simple' && !!v && (r === 'mesa' || !!v.roles[r]);
 // The catalog server on Luis's PC (port 8090) saves captures and recordings made from this page.
 // Served by the catalog server itself (PC, home wifi or the internet link): talk to it directly. Otherwise (web artifact, file) try the PC.
 const ONSRV = location.port === '8090' || (/^https?:$/.test(location.protocol) && !/claude|anthropic/.test(location.hostname));
@@ -278,7 +283,27 @@ const PRE = /^\/catalogo(\/|$)/.test(location.pathname) ? '/catalogo' : '';
 const SRV = ONSRV ? PRE : 'http://localhost:8090';
 // Through the internet link the game can't open on this device: Simular plays it on the PC and shows the recording here
 const REMOTO = ONSRV && location.protocol === 'https:';
-let GRAB = {};
+let GRAB = {}, GRABRAW = {};
+// «Mejorada» or «Simple» (Luis 2026-11-01 09:15): what the videos show and what Simular films. The «Simple» videos are
+// saved next to the others as <rol>-simple.webm; GRAB is the view of the chosen style, so the rest of the page is the same
+let ANIM = 'mejorada'; try { if (localStorage.getItem('cat-anim') === 'simple') ANIM = 'simple'; } catch (e) {}
+const SUF = () => ANIM === 'simple' ? '-simple' : '';
+const FXQ = () => ANIM === 'simple' ? 'baja' : 'alta';
+function vistaGrab() {
+  const v = { _img: GRABRAW._img || {}, _v: (ANIM === 'simple' ? GRABRAW._vs : GRABRAW._v) || {} };
+  for (const [k, rs] of Object.entries(GRABRAW)) if (!k.startsWith('_') && Array.isArray(rs)) {
+    const mine = rs.filter((r) => ANIM === 'simple' ? r.endsWith('-simple') : !r.endsWith('-simple')).map((r) => r.replace(/-simple$/, ''));
+    if (mine.length) v[k] = mine;
+  }
+  return v;
+}
+function setAnim(a) {
+  ANIM = a === 'simple' ? 'simple' : 'mejorada'; try { localStorage.setItem('cat-anim', ANIM); } catch (e) {}
+  document.querySelectorAll('[data-anim]').forEach((b) => b.setAttribute('aria-checked', String(b.dataset.anim === ANIM)));
+  document.querySelectorAll('[data-anim]').forEach((b) => b.setAttribute('aria-selected', String(b.dataset.anim === ANIM)));
+  const t = GRAB.t; GRAB = vistaGrab(); GRAB.t = t; rerender();
+  if (ui.sel && ui.sel[0] !== 'w' && !document.getElementById('split').hidden) openRow(ui.sel);
+}
 const gkey = (key) => key[0] + '-' + key.slice(2).toLowerCase().replace(/[^a-z0-9]+/g, '-');
 const grabbed = (key, r) => (GRAB[gkey(key)] || []).includes(r);
 const hasV = (key, v, r) => grabbed(key, r) || has(v, r);
@@ -300,7 +325,7 @@ function capVer(k) {
   return t >= VER.desde ? `<span class="vv">${esc(VER.version || 'al día')} · ${fecha(t)}</span>`
     : `<span class="vv old" title="Capturada el ${fecha(t)}, antes de instalar ${esc(VER.version || 'la versión actual')}">Versión anterior</span>`;
 }
-async function loadGrab() { try { const c = new AbortController(); setTimeout(() => c.abort(), 2500); const r = await fetch(SRV + '/grabados', { cache: 'no-store', signal: c.signal }); if (r.ok) { GRAB = await r.json(); return true; } } catch (e) {} return false; }
+async function loadGrab() { try { const c = new AbortController(); setTimeout(() => c.abort(), 2500); const r = await fetch(SRV + '/grabados', { cache: 'no-store', signal: c.signal }); if (r.ok) { GRABRAW = await r.json(); GRAB = vistaGrab(); return true; } } catch (e) {} return false; }
 // Why a video is missing: 'no' = it can't exist for this play, 'falta' = it could exist but wasn't recorded.
 function why(key, v, r) {
   const id = key.slice(2);
@@ -416,7 +441,7 @@ const viejo = (it) => (it && it.v && it.v.dir ? (it.kw ? 'vid/kw/' : 'vid/') + i
 function tile(it, r, cls = '') {
   // once a row has its own recording, only that recording is shown (Luis 03:27: just the last one)
   const anyG = (GRAB[gkey(it.key)] || []).length > 0, g = grabbed(it.key, r), ok = g || (!anyG && has(it.v, r));
-  const body = g ? `<video data-g="${SRV}/grab/${gkey(it.key)}/${r}.webm?${(GRAB._v && GRAB._v[gkey(it.key)]) || GRAB.t || ''}" data-r="${r}" muted playsinline preload="auto"></video>`
+  const body = g ? `<video data-g="${SRV}/grab/${gkey(it.key)}/${r}${SUF()}.webm?${(GRAB._v && GRAB._v[gkey(it.key)]) || GRAB.t || ''}" data-r="${r}" muted playsinline preload="auto"></video>`
     : ok ? `<video data-dir="${esc(it.v.dir)}" data-r="${r}" data-kw="${it.kw ? 1 : ''}" muted playsinline preload="auto"></video>`
     : anyG ? '<div class="none"><b>—</b><span class="nw">No sale en la última grabación.</span></div>'
     : (() => { const [k, t] = why(it.key, it.v, r); return `<div class="none"><b>${k === 'no' ? '—' : '✕'}</b><span class="nw">${esc(t)}</span></div>`; })();
@@ -555,16 +580,16 @@ function simular(key) {
 // One browser tab per chosen screen. The first one (sim.html) sets up the game; the URL formats come from the app thread.
 function simTabs(sc, sel, rec) {
   const base = ONSRV ? location.origin + PRE + '/' : 'http://localhost:8090/'; // the catalog server starts the game itself
-  const q = `escena=${encodeURIComponent(sc)}&ver=${encodeURIComponent(sel.join(','))}&grabar=${rec ? 1 : 0}` + (PRE ? '&pre=' + PRE : '');
+  const q = `escena=${encodeURIComponent(sc)}&ver=${encodeURIComponent(sel.join(','))}&grabar=${rec ? 1 : 0}&fxq=${FXQ()}&anim=${ANIM}` + (PRE ? '&pre=' + PRE : '');
   return [[ 'Simulación' + (sel.includes('mesa') ? ' y mesa' : ''), `${base}simular?${q}` ],
-    ...sel.filter((n) => n !== 'mesa').map((n) => [`Tableta de ${n}`, `${base}play.html?jugador=${encodeURIComponent(n)}&sim=1`])];
+    ...sel.filter((n) => n !== 'mesa').map((n) => [`Tableta de ${n}`, `${base}play.html?jugador=${encodeURIComponent(n)}&sim=1&fxq=${FXQ()}`])];
 }
 // «Probar» (Luis 2026-10-23 08:53): the scene only sets up the board; then your tablet and the table open in tabs and
 // you make the play yourself (the other seats answer by themselves). sim.html does it with probar=1 (app side).
 function probar(key) {
   const sc = escena(key); if (!sc) return;
   const base = ONSRV ? location.origin + PRE + '/' : 'http://' + appHost() + ':8090/';
-  window.open(`${base}simular?escena=${encodeURIComponent(sc)}&ver=${encodeURIComponent('mesa,Luis')}&grabar=0&probar=1${PRE ? '&pre=' + PRE : ''}`, '_blank');
+  window.open(`${base}simular?escena=${encodeURIComponent(sc)}&ver=${encodeURIComponent('mesa,Luis')}&grabar=0&probar=1&fxq=${FXQ()}&anim=${ANIM}${PRE ? '&pre=' + PRE : ''}`, '_blank');
 }
 function pickScreens() { return [...document.querySelectorAll('#pick .pk-o:not(.pk-rec) input:checked')].map((i) => i.value); }
 function verVideos(key, only) {
@@ -691,7 +716,7 @@ async function record(key, sc, sel, live, film = true) {
   go.disabled = true;
   box.innerHTML = '<p class="ej" id="rec-m" style="color:var(--gold)">Empezando…</p>';
   const m = document.getElementById('rec-m');
-  const j = await autoJob({ tipo: film ? 'grabar' : 'probar', clave: key, escena: sc, ver: sel.join(','), viejo: viejo(it), papeles: papeles(all4(it && it.v ? it.v.roles : DEFROLES)) }, (x) => { seeLive(x); if (m.isConnected) m.textContent = x.estado; });
+  const j = await autoJob({ tipo: film ? 'grabar' : 'probar', anim: ANIM, clave: key, escena: sc, ver: sel.join(','), viejo: viejo(it), papeles: papeles(all4(it && it.v ? it.v.roles : DEFROLES)) }, (x) => { seeLive(x); if (m.isConnected) m.textContent = x.estado; });
   if (live && !on) try { live.close(); } catch (e) {}
   go.disabled = false;
   if (!j.ok) { if (m.isConnected) m.textContent = j.estado; return; }
@@ -726,7 +751,7 @@ function simCortado() {
 // Server-kept «Simular todo» (Auto.todo): the page only shows it, so a sleeping tablet or a reload doesn't stop it
 async function simServidor(t, btn, ks) {
   const items = ks.map((key) => { const it = item(key), roles = all4(it && it.v ? it.v.roles : DEFROLES);
-    return { clave: key, escena: escena(key), ver: ['mesa', ...new Set(['causa', 'tu', 'otro'].map((r) => roles[r]).filter(Boolean))].join(','), viejo: viejo(it), papeles: papeles(roles), titulo: it ? it.title : key }; });
+    return { anim: ANIM, clave: key, escena: escena(key), ver: ['mesa', ...new Set(['causa', 'tu', 'otro'].map((r) => roles[r]).filter(Boolean))].join(','), viejo: viejo(it), papeles: papeles(roles), titulo: it ? it.title : key }; });
   let r; try { r = await fetch(SRV + '/auto-todo', { method: 'POST', headers: { 'Content-Type': 'application/json; charset=utf-8' }, body: JSON.stringify({ t, items }) }); } catch (e) { return false; }
   if (r.status === 404 || r.status === 405) return false; // older catalog server: the page keeps the list itself
   if (r.status === 503) { const j = await r.json().catch(() => ({})); document.getElementById('sall-' + t).textContent = j.estado || NOSRV; return true; }
@@ -814,7 +839,7 @@ async function simAll(t, btn) {
       while (!SALL.stop && next < n && running <= target) {
         const key = ks[next++], it = item(key), roles = all4(it && it.v ? it.v.roles : DEFROLES), title = it ? it.title : key;
         const ver = ['mesa', ...new Set(['causa', 'tu', 'otro'].map((r) => roles[r]).filter(Boolean))];
-        const j = await autoJob({ tipo: 'grabar', clave: key, escena: escena(key), ver: ver.join(','), viejo: viejo(it), papeles: papeles(roles) }, (x) => { if (x.fase === 'jugando' && now.get(title) !== x.motor) { now.set(title, x.motor); show(); } else if (x.fase !== 'jugando' && now.delete(title)) show(); if (x.fase === 'guardando' && !saving.has(title)) { saving.add(title); show(); } });
+        const j = await autoJob({ tipo: 'grabar', anim: ANIM, clave: key, escena: escena(key), ver: ver.join(','), viejo: viejo(it), papeles: papeles(roles) }, (x) => { if (x.fase === 'jugando' && now.get(title) !== x.motor) { now.set(title, x.motor); show(); } else if (x.fase !== 'jugando' && now.delete(title)) show(); if (x.fase === 'guardando' && !saving.has(title)) { saving.add(title); show(); } });
         now.delete(title); saving.delete(title); done++;
         if (j.ok) { await loadGrab(); GRAB.t = Date.now(); rerender(); }
         else { bad++; fails.push(title + ': ' + j.estado); if (j.estado === NOSRV) SALL.stop = true; }
@@ -856,7 +881,7 @@ function tab(which) {
   try { localStorage.setItem('cat-tab', which); } catch (e) {}
 }
 document.addEventListener('click', async (e) => {
-  const t = e.target.closest('[data-sall],.fx-x,.fctl,#sim .v,#cap-all,#d-cap,#pk-x,#pk-vid,#pk-app,[data-stab],#d-b .v,[data-sim],[data-open],[data-zoom],[data-cat],[data-kf],#d-x,#s-x,#s-again,#lb,#t-acc,#t-ven,#t-kw,#t-fin,[data-finanim],#d-ped,#d-pro,#pedido-ok,#pedido-copy,[data-ped],#pedido-x');
+  const t = e.target.closest('[data-sall],.fx-x,.fctl,#sim .v,#cap-all,#d-cap,#pk-x,#pk-vid,#pk-app,[data-stab],#d-b .v,[data-sim],[data-open],[data-zoom],[data-cat],[data-kf],#d-x,#s-x,#s-again,#lb,#t-acc,#t-ven,#t-kw,#t-fin,[data-finanim],#d-ped,#d-pro,#pedido-ok,#pedido-copy,[data-ped],#pedido-x,[data-anim]');
   if (!t) return;
   if (t.id === 'lb') { t.hidden = true; t.innerHTML = ''; return; }
   if (t.dataset.finanim) { const lb = document.getElementById('lb'); lb.innerHTML = `<div><iframe src="anim/fin.html#${encodeURIComponent(t.dataset.finanim)}" title="${esc(t.dataset.t)}"></iframe><p>${esc(t.dataset.t)} · toca fuera para cerrar</p></div>`; lb.hidden = false; return; }
@@ -877,6 +902,7 @@ document.addEventListener('click', async (e) => {
   if (t.id === 'pedido-ok') return pedidoEnviar();
   if (t.id === 'pedido-copy') { const b = document.getElementById('pedido-box'); return pedidoCopiar(pedidoTexto(b.dataset.key), b.querySelector('#pedido-m')); }
   if (t.id === 'pedido-x') { document.getElementById('pedido-box').hidden = true; return; }
+  if (t.dataset.anim) return setAnim(t.dataset.anim);
   if (t.id === 'pk-vid') { const sel = pickScreens(); document.getElementById('pick').hidden = true; return verVideos(t.dataset.k, sel); }
   if (t.id === 'pk-app') {
     const sel = pickScreens(), rec = document.getElementById('pk-rec').checked;
@@ -902,6 +928,7 @@ document.getElementById('vq').addEventListener('input', (e) => { ui.vq = e.targe
 document.getElementById('kq').addEventListener('input', (e) => { ui.kq = e.target.value.trim(); renderKw(); });
 
 renderRows(); renderWindows(); renderKw();
+document.querySelectorAll('[data-anim]').forEach((b) => { b.setAttribute('aria-checked', String(b.dataset.anim === ANIM)); b.setAttribute('aria-selected', String(b.dataset.anim === ANIM)); });
 Promise.all([loadGrab(), loadVer()]).then(([ok]) => { if ((ok && Object.keys(GRAB).length) || VER.desde) rerender(); simAlAbrir(); });
 try { const t = localStorage.getItem('cat-tab'); if (t === 'ven' || t === 'kw' || t === 'fin') tab(t); } catch (e) {}
 // ?simtodo=a|fin|k&n=1|2&desde=<ms>&solo=a:id,a:id → «Simular todo» starts by itself; the page title carries the progress
