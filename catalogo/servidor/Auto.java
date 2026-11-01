@@ -509,7 +509,8 @@ public class Auto {
       }
       // Scene names come as SC.x, KW.x or W.x: a lookup that understands all three, whatever sim.html expects
       eval(cdp, sim, "(() => { globalThis.W = globalThis.W || {}; W.listo = async () => {}; const t = globalThis.SC || {}; let warm = false; globalThis.SC = new Proxy(t, { get(o, k) { if (typeof k !== 'string') return o[k]; const i = k.indexOf('.'); if (i < 0 || k in o) return o[k]; const ns = k.slice(0, i), id = k.slice(i + 1); if (ns === 'SC') return o[id]; if (ns === 'W') return W[id]; if (ns === 'KW' && globalThis.KW && (KW[id] || (globalThis.KWO && KWO[id]))) return async () => { if (!warm && KW.warm) { warm = true; await KW.warm(); } return ((globalThis.KWO && KWO[id]) || KW[id])(); }; return undefined; } }); return 1; })()");
-      eval(cdp, sim, "(() => { try { localStorage.setItem('mtgLang', 'es'); } catch (e) {} return 1; })()");
+      // fxq=alta (animations v3, 2026-11-01): a browser without a screen would turn the effects down to low quality (no particles)
+      eval(cdp, sim, "(() => { try { localStorage.setItem('mtgLang', 'es'); localStorage.setItem('fxq', 'alta'); } catch (e) {} return 1; })()");
       eval(cdp, sim, "document.getElementById('go').click(), 1");
       long start = System.currentTimeMillis(); String last = "";
       for (;;) {

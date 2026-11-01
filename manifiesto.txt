@@ -1,4 +1,4 @@
-8405d40f986a0357ae074c50ab3a314a62b21c4d 1205645 app.jar
+2b596ffc470b1c8b81a36cd4133b5b8ecc039d12 1671169 app.jar
 0039e64c319032b20adb7f8f3380e1315c3954c7 20228 engine/res/ai/Default.ai
 977d7b40a160e3000b0fd25f22a4b7253186f32b 22509 engine/res/blockdata/blocks.txt
 d228b28e430bdacd5367d04b562679bab4950543 33959 engine/res/blockdata/boosters-special.txt
@@ -2051,6 +2051,9 @@ a9b3a251aacddc53489913b6673441bfd7114589 990 engine/res/formats/Sanctioned/Paupe
 b0d07dfd4ece74495446e2815c507e432edd82ee 1068 engine/res/formats/Sanctioned/Pioneer.txt
 d6249685685c18c8159583d9670d31f6443345cd 420 engine/res/formats/Sanctioned/Standard.txt
 962bd1a6f45a15ca7cee97c4ffccd0fdc82b5648 4300 engine/res/formats/Sanctioned/Vintage.txt
+c4a0a12ec4cac968d204f502547b80720af09306 25175010 engine/res/ia/dificil-modelo.bin
+3ffec8d58d10f99e1bd37e25d76cdfceeb58d058 5 engine/res/ia/dificil-version.txt
+089a051cf9edc7ce6f407d8c5d10da7305687ea8 4578234 engine/res/ia/prediccion-mazos.bin
 589e60d7d9cec0d0b6cc0f4ef8caed980615520f 7629438 engine/res/languages/cardnames-es-ES.txt
 efeebec5cb535a787046c884ba58635025670c7b 179646 engine/res/languages/en-US.properties
 37d0a0c50c5cbf2b32aed5a194fb652476452f63 204472 engine/res/languages/es-ES.properties
@@ -3180,4 +3183,4 @@ c194b73e76090177bc57adf826c68996635d1873 111 engine/res/tokenscripts/wu_2_2_knig
 8e32acef8424174b3b2a10ed35b267481390f2a1 315 engine/res/tokenscripts/yellow_hat.txt
 5e6f12e1de81b14500de46e4410596e88485c9c3 512 engine/res/tokenscripts/zabu.txt
 70134148a29b5da1263c0a8a820b80926ce4011f 101 engine/res/tokenscripts/zeppelin.txt
-1876b328d3fdf6031f70e252a486e896d663cd04 26261008 motor.jar
+cdccc7fc009d5d7d1a030d5e397e459b255227b3 26261902 motor.jar
