@@ -1,1 +1,1 @@
-p193 · p192 + sala (nombre, configuración, tipo de partida) + Configuración → Animaciones Mejorada/Simple
+p195 · p194 + tierra en 3D con más presencia (crece, golpe, onda, polvo)
