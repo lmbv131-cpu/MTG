@@ -1,4 +1,4 @@
-6ad3e8ed4f5d3d3f0e279d046342abae1f27ce79 1713613 app.jar
+197a5325e024bfd9d1264e5dddd4f8d026e63f98 1742336 app.jar
 0039e64c319032b20adb7f8f3380e1315c3954c7 20228 engine/res/ai/Default.ai
 977d7b40a160e3000b0fd25f22a4b7253186f32b 22509 engine/res/blockdata/blocks.txt
 d228b28e430bdacd5367d04b562679bab4950543 33959 engine/res/blockdata/boosters-special.txt
@@ -2050,7 +2050,7 @@ ded1f270ff4dcc9cb44063c0e93e0eec9620b97b 1558 engine/res/formats/Sanctioned/Mode
 a9b3a251aacddc53489913b6673441bfd7114589 990 engine/res/formats/Sanctioned/Pauper.txt
 b0d07dfd4ece74495446e2815c507e432edd82ee 1068 engine/res/formats/Sanctioned/Pioneer.txt
 d6249685685c18c8159583d9670d31f6443345cd 420 engine/res/formats/Sanctioned/Standard.txt
-962bd1a6f45a15ca7cee97c4ffccd0fdc82b5648 4300 engine/res/formats/Sanctioned/Vintage.txt
+be425b4aa227e85a5c3d215dc579d87e0ecf2ab0 4315 engine/res/formats/Sanctioned/Vintage.txt
 c4a0a12ec4cac968d204f502547b80720af09306 25175010 engine/res/ia/dificil-modelo.bin
 3ffec8d58d10f99e1bd37e25d76cdfceeb58d058 5 engine/res/ia/dificil-version.txt
 089a051cf9edc7ce6f407d8c5d10da7305687ea8 4578234 engine/res/ia/prediccion-mazos.bin
