@@ -1,1 +1,1 @@
-p203 · p202 + pestaña «Crear mazo»: comandante, cartas con filtros, recomendadas, combos y curva
+p205 · p204 + animaciones sin retraso (la pantalla va como mucho ~1 s por detrás, las cartas del campo no vuelven a entrar) + «Reportar un fallo» en ⚙ + Crear mazo: mantener pulsada una carta la muestra en grande + efectos de reemplazo iguales se eligen solos y botón «Auto» + límite de fichas con aviso (1.000 de una vez, 2.000 por jugador)
