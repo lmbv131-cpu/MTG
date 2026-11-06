@@ -1,1 +1,1 @@
-p206 · p205 + muchas Vidas paralelas (y otros dobladores de fichas iguales) se aplican de una vez como multiplicación + el aviso de fichas se ve encima de la partida y no se repite en cada disparo
+p207 · p206 + pantalla adaptada al móvil (vertical y horizontal, se adapta al girarlo; iPad y PC igual) + animaciones v7 (134 palabras clave, muertes nuevas) + arreglo de memoria con muchos efectos de reemplazo (la partida de la Pi)
