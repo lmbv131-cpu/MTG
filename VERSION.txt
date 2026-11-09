@@ -1,1 +1,1 @@
-p207 · p206 + pantalla adaptada al móvil (vertical y horizontal, se adapta al girarlo; iPad y PC igual) + animaciones v7 (134 palabras clave, muertes nuevas) + arreglo de memoria con muchos efectos de reemplazo (la partida de la Pi)
+p214 · p213 + Commander Draft: sobre realista de cada set (aluminio, cierres dentados, brillo, arte del set) al abrir cada sobre + quitado el aviso amarillo de la sala
