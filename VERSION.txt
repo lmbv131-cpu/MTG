@@ -1,1 +1,1 @@
-p214 · p213 + Commander Draft: sobre realista de cada set (aluminio, cierres dentados, brillo, arte del set) al abrir cada sobre + quitado el aviso amarillo de la sala
+p216 · p215 + animaciones de todo el Commander Draft (abrir sobre, elegir, confirmar, esperar, pasar, nueva ronda, construir, elegir comandante, listo)
