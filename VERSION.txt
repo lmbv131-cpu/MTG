@@ -1,1 +1,1 @@
-p216 · p215 + animaciones de todo el Commander Draft (abrir sobre, elegir, confirmar, esperar, pasar, nueva ronda, construir, elegir comandante, listo)
+p218 · motor oficial al día (8ead8b6, 12-11-2026): Star Trek (TRK, TRC) y sus 4 precons, Asimilar y todas las mejoras oficiales + nuestros cambios + red v207 «valor»

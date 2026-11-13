@@ -1,12 +1,12 @@
-0489147ff29b1a5d970afb99082e6fbd0ad09e57 2185457 app.jar
-0039e64c319032b20adb7f8f3380e1315c3954c7 20228 engine/res/ai/Default.ai
-977d7b40a160e3000b0fd25f22a4b7253186f32b 22509 engine/res/blockdata/blocks.txt
+16a9b2aaeba9f0dc80a4a32820cae1bc0cc9aec3 2185894 app.jar
+aabd5e25aa9afe6f59dffbc639af04d894580ae7 20927 engine/res/ai/Default.ai
+bfe0bc03b455de6a388b88f661f8ce6d0e7289cb 22533 engine/res/blockdata/blocks.txt
 d228b28e430bdacd5367d04b562679bab4950543 33959 engine/res/blockdata/boosters-special.txt
 06de7ecac8ec08771fd944982d25e1879b6f1335 333 engine/res/blockdata/chaosdraftthemes.txt
 468d15db98217286b90bd0a3599967271da031d1 2340 engine/res/blockdata/fantasyblocks.txt
 1022c6d6386340bdf4e8e7b2d133df90a266f049 216249 engine/res/blockdata/printsheets.txt
 eb79407e14897dacb64a3d852b12884aa7f7f89d 1122 engine/res/blockdata/starters.txt
-c7cd45015b0bfbf5f49fe8c9f6c4ce48a1b4015e 17491326 engine/res/cardsfolder/cardsfolder.zip
+c5a70c16c469bf7fc554f08358f8b36ae651c8fc 16041703 engine/res/cardsfolder/cardsfolder.zip
 728d8a5352549bda44d5434efa86d8579dadb89a 6904880 engine/res/deckgendecks/Commander.dat
 8e40d2790e7f172d032c6dea42f0f215ddf1901c 651 engine/res/defaults/editor.xml
 4b015291692f318d7a8f75449ad7daa40ba8e287 3275 engine/res/defaults/gauntlet/LOCKED_DotP Preconstructed.dat
@@ -94,7 +94,7 @@ d91933eb117ba7b531dfde4c9bf476ac0af56ac5 332 engine/res/editions/Arena League 20
 9e2c61a9b8528726b2c077372f7ab2017e2c3cb5 333 engine/res/editions/Arena League 2006.txt
 0201f8c9352a029f4f541451965960a263b63d42 625 engine/res/editions/Arena New Player Experience Cards.txt
 633e973b46fa90c8ae1635c95b2831d746a504d7 769 engine/res/editions/Arena New Player Experience Extras.txt
-dab0ee09baa4718b6e9305f5a49d369136bb1c7f 1528 engine/res/editions/Arena New Player Experience.txt
+8d3aedcd26b1b8cfca056c26bcd8eba9fa48286d 1665 engine/res/editions/Arena New Player Experience.txt
 f98d19b49856866eafe68274b5c5be8c90c13e77 570 engine/res/editions/Arena Promos.txt
 8295f16bf287a534f46943b6a484c445aa4708f9 524 engine/res/editions/Asia Pacific Land Program.txt
 dc05d9e30a9412f6d2418a5c458da2abecc561f5 12364 engine/res/editions/Assassin's Creed.txt
@@ -173,7 +173,7 @@ b45d795687bdcc8046a05818b13b18b3178d46c5 10120 engine/res/editions/Dominaria Uni
 8211af3817f5357c1602baf1eccfbff9330c1b30 138 engine/res/editions/Dominaria United Promos.txt
 6479854801b1f373d7ea21a1ad787445f0ef65aa 19925 engine/res/editions/Dominaria United.txt
 66a7dda0d3c5229c5fff2efc0e3fe778fd7ac0aa 11514 engine/res/editions/Dominaria.txt
-2a0213a672a9dba1bac66d05618bf8225e0de45f 31856 engine/res/editions/Double Masters 2022.txt
+9e3213304f78eb8806b7bdc752a36abd5177429e 31840 engine/res/editions/Double Masters 2022.txt
 be9f6b8e9fb3dcdb51f3ab98da546dc29c779a42 23345 engine/res/editions/Double Masters.txt
 54d12892533ad4b1351428f9a6d0dd1337b7ea5d 323 engine/res/editions/Dragon's Maze Promos.txt
 3d0bdb5056ea54ef2d20dece59cbd82b40712864 6458 engine/res/editions/Dragon's Maze.txt
@@ -417,7 +417,7 @@ e0317acb63d7689ecd9fcb31ed56b967761bb07d 9491 engine/res/editions/Magic 2014.txt
 3a9c1133b4327dc0212fe829f39d1f587318620d 11037 engine/res/editions/Magic 2015.txt
 5c06de4ade41d4bbcba8b93403bd2c23ec657f22 3143 engine/res/editions/Magic Online Avatars.txt
 1b563a7d5896bf34fc2e444297571ea37e05152b 1603 engine/res/editions/Magic Online Deck Series.txt
-f2947c46991cc7eb6dd60988536919f11ffeba27 125059 engine/res/editions/Magic Online Promos.txt
+c8babfa741d727dc063ee46a52ca938fc8c107ba 125101 engine/res/editions/Magic Online Promos.txt
 2e363bcd2d9b3ba58c83d91e226bf4a627fc8aa0 5658 engine/res/editions/Magic Online Theme Decks.txt
 5555a7500c95df58464114275bf576ac879695ab 332 engine/res/editions/Magic Origins Clash Pack.txt
 b6166cc88c8970fc84e73d8d1a6f015116c196f0 467 engine/res/editions/Magic Origins Promos.txt
@@ -446,13 +446,13 @@ ec6097f8cc4f30734892c28b14c27e870c08cf94 252 engine/res/editions/Magic Premiere 
 29ae195ed26e6c6ba7441dd1b6ff71f422cc0a82 282 engine/res/editions/MagicFest 2023.txt
 3f808ce7f9f9538ad0b56526a04c5b92ea76b15c 161 engine/res/editions/MagicFest 2024.txt
 6041ac6c5c9daca282e52230f944c1168ffddf3f 891 engine/res/editions/MagicFest 2025.txt
-d1d853daa421b334a339c93f88470aafcf56fc6f 725 engine/res/editions/MagicFest 2026.txt
+8e3b452276edc84fda1ab33cb504dcbc0bf8f5ce 816 engine/res/editions/MagicFest 2026.txt
 d27d2a91ebdef1e16f520d13a013f548e5299d5b 128 engine/res/editions/MagicFest 2027.txt
 42e91858a10c26722bbc246ed8076870e3f687fc 19136 engine/res/editions/March of the Machine Commander.txt
 34661003307b2ad417b94860c9540d8fc1dd3342 9455 engine/res/editions/March of the Machine The Aftermath.txt
 44af0038f34fdff68ece3ab54a3d95244001c415 18887 engine/res/editions/March of the Machine.txt
 e4b3a2ef968f898d7d9a5a3a676a7efae84e1f95 164 engine/res/editions/Marvel Darkhold Destiny Commander.txt
-4b3d16d101dc7e3a74ec04a93540de6f5f32048b 519 engine/res/editions/Marvel Darkhold Destiny.txt
+62a868455c221f5c744e1f192ea6bcd51713a887 744 engine/res/editions/Marvel Darkhold Destiny.txt
 e94d8fa978df05eeae13b05386df0a5c3b4081b0 512 engine/res/editions/Marvel Legends Series Inserts.txt
 6c908c85900a37a0ad627f0027d8d9888973c9c9 37642 engine/res/editions/Marvel Super Heroes Commander.txt
 802f7855abd8a7033a8dd846dd1b4fb76f1ce461 26030 engine/res/editions/Marvel Super Heroes.txt
@@ -464,7 +464,7 @@ a23541c644c86b396d172c7c7fde95665cefc846 9736 engine/res/editions/Masters 25.txt
 4d0c2b86967f99df8cebabeb89ec4dfd3d5c5aa3 8225 engine/res/editions/Masters Edition III.txt
 933fc13525e9f1960cf6cc71b664e01896caf059 9383 engine/res/editions/Masters Edition IV.txt
 5c1e7de20f5022d772438d2e2767d6c46b7a76dd 6886 engine/res/editions/Masters Edition.txt
-4fb20cdbdf3b1b8be606cc1544742c02013f4ff3 4819 engine/res/editions/Media and Collaboration Promos.txt
+386bc43b83d010206feb6d944049c0135053153d 5040 engine/res/editions/Media and Collaboration Promos.txt
 ed9d29bfd2ac30e04eca8e11cf45e0c4e8a84052 136 engine/res/editions/Mercadian Masques Promos.txt
 0bfe626605a01fadc4ce0eb5326478eef1a6e2bc 12345 engine/res/editions/Mercadian Masques.txt
 189ed5d3ebf284395555ba3df831ad052b4f9b0b 12327 engine/res/editions/Mirage.txt
@@ -489,7 +489,7 @@ a7cab1db3df9697edb9fecea6f06a4969206360c 9156 engine/res/editions/Modern Masters
 129ed783ffa9db7571b9ad2fc73beed35e149296 14782 engine/res/editions/Murders at Karlov Manor Commander.txt
 16379f8d7c9b0d11253bc42713261dbbadb1ff37 19793 engine/res/editions/Murders at Karlov Manor.txt
 578f29647d27896eb0394c303d2495612437228c 14689 engine/res/editions/Mystery Booster 2.txt
-cfe5461b121b3180cff9d20efd3b269f9e94e7e5 3448 engine/res/editions/Mystery Booster Commander Edition.txt
+5eb84fe2bedf3d3e6f4b58808dbfe7a5250b1545 3448 engine/res/editions/Mystery Booster Commander Edition.txt
 c65330ada85d49a3325ee04051bc338e3ea18914 4602 engine/res/editions/Mystery Booster Playtest Cards.txt
 a4547948c93f70c02f83cec84441a81bae31113c 38737 engine/res/editions/Mystery Booster.txt
 07f1b8afd5641f92ec61c8f376ba518ade0a0a61 859 engine/res/editions/Mythic Edition - Guilds of Ravnica.txt
@@ -526,7 +526,7 @@ ff0a3e241cd2056bf9c93438ec742bbe6c2fe4e6 7021 engine/res/editions/Planechase 201
 202217fac04f0268e5959c295c6f4a322cab8a31 7362 engine/res/editions/Planechase.txt
 6d1134a81537784a029f12ca1d17bd991c092aa6 152 engine/res/editions/Planeshift Promos.txt
 216e35d71d947334c4a5932aae0458fdfd207493 5278 engine/res/editions/Planeshift.txt
-402e1a32564a61cf4eb19adf1793b2d4ec4b87d6 2087 engine/res/editions/Planeswalker Championship Promos.txt
+e407a193f44eadd98edb3c8edfbfc054a47293b9 2086 engine/res/editions/Planeswalker Championship Promos.txt
 c008c2447223197d2c92783a5a172d694905ce64 5775 engine/res/editions/Portal Second Age.txt
 8cbd153c85496d81f7a1ea290b5adb6b4ddb44cb 197 engine/res/editions/Portal Three Kingdoms Promos.txt
 1d4c6d5da666c552b38705c0e3dee1c9c421e6f3 6281 engine/res/editions/Portal Three Kingdoms.txt
@@ -547,7 +547,7 @@ be3abe3677cb84b4913ffc2c3a5d2eb140e53cb9 11471 engine/res/editions/Ravnica City 
 026382d261973884baae0115fdfa4288299e7de9 10315 engine/res/editions/Ravnica Clue Edition.txt
 9ac82016e316bc0ffe0e64e1ae1951db509ac59d 19002 engine/res/editions/Ravnica Remastered.txt
 b2662069103387e0cd825f0d2fa7123969e2c7c9 4635 engine/res/editions/Reality Fracture Commander.txt
-a642e6a446fa8ec3640e42f2bae73dc842d9c0b2 29405 engine/res/editions/Reality Fracture.txt
+afcd85cdf5a6b91dfd5999547997dee7529f2c53 29421 engine/res/editions/Reality Fracture.txt
 4e9478cddafc2dee24948af5dadf906648d7cea9 147 engine/res/editions/Redemption Program.txt
 619e68070705456ac877d37a8be54bac2e979150 233 engine/res/editions/Regional Championship Qualifiers 2022.txt
 c855eeffe72764cfc120429981fab5fd0613964a 222 engine/res/editions/Regional Championship Qualifiers 2023.txt
@@ -572,8 +572,8 @@ a3d458f9a4933540f5b4e7219099fdd09bfc82fd 216 engine/res/editions/Scars of Mirrod
 edd9b9dcff882029701b8d4b1d12610b8379c2ed 9230 engine/res/editions/Scars of Mirrodin.txt
 7f5d9e4df3efc55de72c042d7e8480c534cbd152 134 engine/res/editions/Scourge Promos.txt
 4163a16ad4c4f77e13202be0bff20c9b53922718 5417 engine/res/editions/Scourge.txt
-0a57ba3bcd5834563c0efb5d81a82c5f79201553 3285 engine/res/editions/Secret Lair Countdown.txt
-1fe11a20044edf75d5226da122ca5f0afb7bae30 126587 engine/res/editions/Secret Lair Drop.txt
+c0315d6c496952a27554d9028b740e64c6a5f966 4464 engine/res/editions/Secret Lair Countdown.txt
+818469531ee47bda06f2a89d9c61f0ec713e104c 129609 engine/res/editions/Secret Lair Drop.txt
 f56b1b458049457e3f72977073bbdad6898abce7 2072 engine/res/editions/Secret Lair Promo.txt
 55bff39ea7527c45c3529697b9c23f4b52a93d28 543 engine/res/editions/Secret Lair Showcase Planes.txt
 1f8e4cf6da99db4c3d189ea00e45ddefa518b9f3 710 engine/res/editions/Secret Lair Ultimate Edition.txt
@@ -594,10 +594,10 @@ ab9e80b11e01acaab0d02ea9550f80925596adbe 413 engine/res/editions/Signature Spell
 4392f60691083fe9d10dd8e0359618919536ba75 390 engine/res/editions/Signature Spellbook Gideon.txt
 1d2e8eec87501ae8529f57d8a88f5a108b2efba9 379 engine/res/editions/Signature Spellbook Jace.txt
 45db37a5198e9b17d51e4430cd824c55f57cc9f2 6409 engine/res/editions/Special Guests.txt
-d677f77866119b45e53e1b6e86d54ab1f1ff57bc 598 engine/res/editions/Spotlight Series.txt
-64a69ba59211d1cfdee2d8ac72f9b497ad8055ae 1892 engine/res/editions/Star Trek Commander.txt
-49fc81c05e259863630c80f811ca9d3b3dd60c2f 5471 engine/res/editions/Star Trek.txt
-a368980967d5d1837d180e4ec55aa78f1a8ab42c 186 engine/res/editions/Stardates.txt
+cdefb0f4899f68c9a5b5e12ca43560ce6897d405 647 engine/res/editions/Spotlight Series.txt
+087a8122a0f1a39f9ce0e90a9a42126ee6f9efc3 23301 engine/res/editions/Star Trek Commander.txt
+fb7a1fad1577215534ef0245a815e031b6e3ee84 33368 engine/res/editions/Star Trek.txt
+12bf918762ca087b65e6101f8fb7dd9fe7ed81b7 2537 engine/res/editions/Stardates.txt
 77df2aa3118f9301ed4b12985b7413ca00db46e9 5875 engine/res/editions/Starter 1999.txt
 4404b3bc05e5c690d4687fdc4ca0edd8b2dc42c3 790 engine/res/editions/Starter 2000.txt
 8c7f20ccd1dcc1507eb94f947cf1595714a08722 14171 engine/res/editions/Starter Commander Decks.txt
@@ -627,13 +627,13 @@ eb3acc2c11f54acf9bde188a9d0d53c8ad5eab87 8459 engine/res/editions/The Brothers W
 010046f5fcc100c87bba69308a5c606ac9fd43f8 16602 engine/res/editions/The Brothers War.txt
 64e99d7e0c37fdc78305805d33c98b42828d981d 4186 engine/res/editions/The Dark.txt
 732035cfb76c551bff22a0f1a817da275284455a 6332 engine/res/editions/The Hobbit Eternal.txt
-466686189c2fdea78d7b85623d08a5f5d9ebd049 18059 engine/res/editions/The Hobbit.txt
-6c3d81c11d60bca87e4f3a917cae552286644a3e 231577 engine/res/editions/The List.txt
+b9139dbffe3fe00c0de24367cf42181389722b98 18075 engine/res/editions/The Hobbit.txt
+8db2861c1371d9a0df9663888877f6676da49bac 234844 engine/res/editions/The List.txt
 0f3891312f7a5b616412595588bd8819d202bad9 26195 engine/res/editions/The Lord of the Rings Tales of Middle-earth Commander.txt
-aa33cb4da2563ac36db078577fe4c945a6890b1d 34737 engine/res/editions/The Lord of the Rings Tales of Middle-earth.txt
+9fd8e4f9499a1fc7def029bf9b99bc7a727ec10c 34738 engine/res/editions/The Lord of the Rings Tales of Middle-earth.txt
 f334289c817ad0332661e14f2802ac14a9fd980c 15214 engine/res/editions/The Lost Caverns of Ixalan Commander.txt
 367b8a08195f8e8319ce81552c9fa94af088171c 18618 engine/res/editions/The Lost Caverns of Ixalan.txt
-00281b509883af25790b47c6fa21a2c4f0139a05 10291 engine/res/editions/The Zeta Set.txt
+0173e5e62eaf83ae934bf25d5842a9e265bcc989 21670 engine/res/editions/The Zeta Set.txt
 521a52211c6594d6f6cbc1a416a07b3b85c22e7c 140 engine/res/editions/Theros Beyond Death Promos.txt
 d537b8af192a02324ef533b62af5a048c1e13d45 21847 engine/res/editions/Theros Beyond Death.txt
 b9cf586cbe0571e4a650d1250d2afdab6617abec 494 engine/res/editions/Theros Promos.txt
@@ -690,7 +690,8 @@ a990e450c679c9062727fac63ba4845a350d15a6 326 engine/res/editions/Wizards Play Ne
 e907b40533f02c2a8eb6cf974731d814c7d80a2e 485 engine/res/editions/Wizards Play Network 2023.txt
 950a46daa14fdd896136231088f02952fad659c3 758 engine/res/editions/Wizards Play Network 2024.txt
 e106d4099bd6acbe5b674cc61cc607e9f97f823e 687 engine/res/editions/Wizards Play Network 2025.txt
-6e25a6ae4faa49b6d7454ba91f3f185bc9af4bc9 1001 engine/res/editions/Wizards Play Network 2026.txt
+2cfa06b10ec0871bf73b838d01b2352bed3538c0 1035 engine/res/editions/Wizards Play Network 2026.txt
+bcc2508663d9f32c2cfe600b652babc76277b7cf 134 engine/res/editions/Wizards Play Network 2027.txt
 54c1e24587468ea6ad536e06ac7618a932c305d8 146 engine/res/editions/Wizards of the Coast Online Store.txt
 466a3e993c9d6922e21a3f622e86e90b978f476d 182 engine/res/editions/World Championship Promos.txt
 5008a894520c570a292e07710e23d4faeda317f0 298 engine/res/editions/World Magic Cup Qualifiers.txt
@@ -760,6 +761,7 @@ d003a162d3bf5e5d7bf117ea6455eeba55f1c0ec 166 engine/res/formats/Archived/Alchemy
 13c9cca367b74000ba61734c1b0d0888b28fbd13 230 engine/res/formats/Archived/Alchemy/2026-08-11.txt
 a6094d9f4708ce550b785ed8e1b5155024907f48 235 engine/res/formats/Archived/Alchemy/2026-09-29.txt
 af1e01bb4a32a81c4b40ecb02b16af0dc63ee6ca 242 engine/res/formats/Archived/Alchemy/2026-10-13.txt
+6b8d5d13f0d74688f64893023039f520b793c170 246 engine/res/formats/Archived/Alchemy/2026-11-10.txt
 604610c6aaa6d52ce98996127bc04b95c035645b 103 engine/res/formats/Archived/Arena Standard/2017-09-07.txt
 82e4784551f6a84081bb8aea09feecf614a3ba90 101 engine/res/formats/Archived/Arena Standard/2018-01-18.txt
 2a628a7b3528814d5763ff82ef962cedea4ae05e 115 engine/res/formats/Archived/Arena Standard/2018-03-22.txt
@@ -823,6 +825,7 @@ c0a6654b46cab29200abb0dee18a3edb46b5d141 394 engine/res/formats/Archived/Arena S
 f8200fa035dd65911064ed5eccec8364ccbfc075 409 engine/res/formats/Archived/Arena Standard/2026-06-23.txt
 02812504f9af363504cb991379fc8f14ab1d1038 463 engine/res/formats/Archived/Arena Standard/2026-08-11.txt
 51a4c55477774cd3e804b89b90b072dee43151e3 468 engine/res/formats/Archived/Arena Standard/2026-09-29.txt
+e00331d22c11447dc271f7c007b1ae245b6a759a 473 engine/res/formats/Archived/Arena Standard/2026-11-10.txt
 5f897a0d6daecba995ccab36bbdc8d9497c081a2 94 engine/res/formats/Archived/Block/Amonkhet/2017-04-28.txt
 31f59a6ab5cb16034d1d3eb6609ecff7463da100 99 engine/res/formats/Archived/Block/Amonkhet/2017-07-14.txt
 9a1bce7a3bc3c078858fce95e8307c67ded2bece 105 engine/res/formats/Archived/Block/Battle for Zendikar/2015-10-02.txt
@@ -1059,6 +1062,7 @@ ce95c8cc2a5612fdd8abc0dcbbe211e568f9d019 2680 engine/res/formats/Archived/Histor
 6028d74eead6dda99724c309cbbf3f1c8e578988 2791 engine/res/formats/Archived/Historic/2026-09-22.txt
 7d93cade1d8e40f0a20d8570d48fb9265da086c7 2814 engine/res/formats/Archived/Historic/2026-09-29.txt
 899dc62cebfd279c3ce06b72d9642f99feb5eb18 2821 engine/res/formats/Archived/Historic/2026-10-13.txt
+ac7978c797945b3d0c41c60b48725b0d2bd7d540 2830 engine/res/formats/Archived/Historic/2026-11-10.txt
 163b66be7f446f2b697482707e394a2ff5e460f1 778 engine/res/formats/Archived/Legacy/1996-05-01.txt
 50116499031ccabe5adfd26c25c97646f56e7b86 788 engine/res/formats/Archived/Legacy/1996-07-01.txt
 1a0ad947d4306f6f427fabf0e7963bd3d5a429d2 786 engine/res/formats/Archived/Legacy/1996-07-10.txt
@@ -1348,6 +1352,7 @@ a24f2d640661fcdf5e59c22b0eb4652424e568dd 6800 engine/res/formats/Archived/Legacy
 917910d224ccd739f3b671cbc82281a908bc11a0 6865 engine/res/formats/Archived/Legacy/2026-08-10.txt
 cacd778f9c70f7764671cb6b451a76bfbb72af3b 6868 engine/res/formats/Archived/Legacy/2026-08-14.txt
 cd6d906eb2fcdbe99ef81c5a7f2b2ad437942017 6883 engine/res/formats/Archived/Legacy/2026-10-02.txt
+92383644d009a033c415bcae6ec9429a3c7b18da 6898 engine/res/formats/Archived/Legacy/2026-11-13.txt
 88231a9d06fdeccae90a06449a65a2c30a7276b2 457 engine/res/formats/Archived/Modern/2011-05-19.txt
 c270e29f87509c87bb1359cbe8b604afa5973292 455 engine/res/formats/Archived/Modern/2011-07-15.txt
 0f0be15b6e4fb984268ffaf748814f33d8cbf3af 632 engine/res/formats/Archived/Modern/2011-08-12.txt
@@ -1452,6 +1457,7 @@ ce2f7d271783c881503df7b9903795bf2bf485d8 1545 engine/res/formats/Archived/Modern
 1e157a542325671e9c6e5e958ad08f11d55ae57b 1563 engine/res/formats/Archived/Modern/2026-06-26.txt
 eed22007a96aecf3966490717c05f2fa217195ce 1568 engine/res/formats/Archived/Modern/2026-08-14.txt
 34b4430edfd657e51c36dc3be59b46d2fb876659 1573 engine/res/formats/Archived/Modern/2026-10-02.txt
+ac3611412f35e09ebb06ab40aec8365c91033d7e 1578 engine/res/formats/Archived/Modern/2026-11-13.txt
 4f2b27cdbcc05a65e875533845a11d7c7498f1b3 132 engine/res/formats/Archived/Pauper/2019-05-24.txt
 db8ce315dfb3d29673d978a34d2b78bcfdad2704 151 engine/res/formats/Archived/Pauper/2019-10-25.txt
 ef370164f3b9a553888e52a318e008d506a84cfa 168 engine/res/formats/Archived/Pauper/2020-01-14.txt
@@ -1508,6 +1514,7 @@ e29a15e8df682bf91f4853b0f6409fa66f89da70 1039 engine/res/formats/Archived/Pionee
 4a9bdeea9086a1ba8ea700042b227cff32c482c4 1073 engine/res/formats/Archived/Pioneer/2026-06-26.txt
 d5fe9e88c89866f100a920a01eaca367378f52de 1078 engine/res/formats/Archived/Pioneer/2026-08-14.txt
 57b25cabf70a47d8b12c271438eb54ee51de2261 1083 engine/res/formats/Archived/Pioneer/2026-10-02.txt
+4c56763f959c386bff342ae69037984284697292 1088 engine/res/formats/Archived/Pioneer/2026-11-13.txt
 cb82a7fa972a715decccde8bcd77e4204a6e53d5 323 engine/res/formats/Archived/Standard/1995-01-10.txt
 cb5f3c9586340840ccff7df7d9c112dcd8949fbb 235 engine/res/formats/Archived/Standard/1995-04-19.txt
 bdb1617cb8fb098a3156ef32e98c3b81ef969e2f 238 engine/res/formats/Archived/Standard/1995-06-03.txt
@@ -1663,6 +1670,7 @@ d186818c39a4962cfcf9e3053846ce9fa3712b70 376 engine/res/formats/Archived/Standar
 85f504819ae93c50e7f3395f1a1a5dfb55206485 432 engine/res/formats/Archived/Standard/2026-08-10.txt
 59aebea253a35651056d12a722277bb563ec9e4d 430 engine/res/formats/Archived/Standard/2026-08-14.txt
 0537c45a6db1538397e520b6fed5da25012ae593 435 engine/res/formats/Archived/Standard/2026-10-02.txt
+45568097d7f881b687ca0b1d11d4777f228539ed 440 engine/res/formats/Archived/Standard/2026-11-13.txt
 2df91293ff725714926cf4a8968bb306dfa4591c 270 engine/res/formats/Archived/Standard/China/2018-06-22.txt
 42f4bf0b8562046bdb5b694ec21b7982263c8cb5 275 engine/res/formats/Archived/Standard/China/2018-07-13.txt
 43642b84ec9d3e4586bea4cec7b8e1b0e4c3a2f5 148 engine/res/formats/Archived/Standard/China/2018-10-05.txt
@@ -1704,6 +1712,7 @@ c9b76465d8288d28466407c1c42b2f722af1b14b 1654 engine/res/formats/Archived/Timele
 fca3198392a5b91f471464b7834b55eed13a8374 1659 engine/res/formats/Archived/Timeless/2026-08-11.txt
 c87e62f237e30b6ba3ebe4f1a4f13f83f08ec0eb 1664 engine/res/formats/Archived/Timeless/2026-09-29.txt
 1310fb19807d702cd69b0d751fd703ffaaaedbbe 1671 engine/res/formats/Archived/Timeless/2026-10-13.txt
+572c10dfe6827ada6a8a3421fb85f0c12f2e4bd7 1680 engine/res/formats/Archived/Timeless/2026-11-10.txt
 e047d5cb032d650689566096649fa88820e21991 98 engine/res/formats/Archived/Vintage/1993-08-05.txt
 08b16b2db5d40dace97ee39a35cf3ddbfb05cd3f 96 engine/res/formats/Archived/Vintage/1993-10-04.txt
 d42b060e92cffd921b42b9a78a2303b5a21aec45 101 engine/res/formats/Archived/Vintage/1993-12-01.txt
@@ -2011,6 +2020,7 @@ d9f4fad044ae240b8c1fd4e9e15a415dea1106b9 6530 engine/res/formats/Archived/Vintag
 43e666bc5b21527a49124bc653731b0bf7107ff2 6547 engine/res/formats/Archived/Vintage/2026-08-10.txt
 5d1c35869c07b0bcf5d08f31204937d53c59c19c 6550 engine/res/formats/Archived/Vintage/2026-08-14.txt
 574a3a097afcf7eee0fcbbec87a16dd7525e2a6a 6565 engine/res/formats/Archived/Vintage/2026-10-02.txt
+c1fa9e739650c5cd04c2284510afa2b1573135ee 6580 engine/res/formats/Archived/Vintage/2026-11-13.txt
 815f98c06e563df9fc7ac0d7a2f896709e295bce 81 engine/res/formats/Block/Amonkhet Block.txt
 7233206ce33a0bcc9fe4370df1b093d1ca2037b3 92 engine/res/formats/Block/Battle for Zendikar Block.txt
 93837b24c8a0f65483b0ae006e813b9593141b15 136 engine/res/formats/Block/Ice Age Block.txt
@@ -2036,7 +2046,8 @@ d76c6fc50204aa23e3c96b188fa12306ca9c1528 95 engine/res/formats/Block/Shadows ove
 f61f79171cf127bb68ed23eba93e0034e4c2466b 89 engine/res/formats/Block/Time Spiral Block.txt
 89cdfda6a574b7afa071b1adad1496d0b09304bd 186 engine/res/formats/Block/Urza Block.txt
 9a61a4c124e4ffaa5924f9b17e2156ab59fa4ff0 86 engine/res/formats/Block/Zendikar Block.txt
-ac790c3e11b171083214ff801809c39f376701c4 209 engine/res/formats/Casual/Brawl.txt
+8e8ab829c61c9617fef12097ebd07b0a6cd41051 19304 engine/res/formats/Casual/Brawl.txt
+7599494940be08d264aa217a66ebbc64529ad804 891 engine/res/formats/Casual/Canadian Highlander.txt
 815f2e0f30cc687fd283480a6715afaa95fff740 1645 engine/res/formats/Casual/Commander.txt
 80f427bf929f5e76d759ab5e8806d790643599c3 78 engine/res/formats/Casual/Conspiracy.txt
 defbfaa4d44207f56b6080bf02241724b4531477 1384 engine/res/formats/Casual/Oathbreaker.txt
@@ -2044,24 +2055,24 @@ b2d1bfa21dd9d7773c259d4d39e0bfa207937259 2767 engine/res/formats/Casual/PreDH.tx
 fb487f7733612ad250bf9bc33bb3ed67ccdb72af 666 engine/res/formats/Casual/Premodern.txt
 ef018249a14e71357c61f36f7fc76191b471f657 90 engine/res/formats/Casual/Un-Sets.txt
 dd8a0cc76be3e17615976023b82db6cad00a4b1f 193 engine/res/formats/Sanctioned/Extended.txt
-c0755cc7f2ac24083cc14e8088b7ded6911052d6 2828 engine/res/formats/Sanctioned/Historic.txt
-8dde65d33f29162670c51345c6e6616a9615409a 4618 engine/res/formats/Sanctioned/Legacy.txt
-ded1f270ff4dcc9cb44063c0e93e0eec9620b97b 1558 engine/res/formats/Sanctioned/Modern.txt
+7f31a01050e98342cf3da8b26b8cce4353364082 2838 engine/res/formats/Sanctioned/Historic.txt
+02d1c3ede59c6eb0d7bc5472f177adb98f57792f 4633 engine/res/formats/Sanctioned/Legacy.txt
+3bdd0c32b69b1b440ac22256e9d095195b1d3147 1563 engine/res/formats/Sanctioned/Modern.txt
 a9b3a251aacddc53489913b6673441bfd7114589 990 engine/res/formats/Sanctioned/Pauper.txt
-b0d07dfd4ece74495446e2815c507e432edd82ee 1068 engine/res/formats/Sanctioned/Pioneer.txt
-d6249685685c18c8159583d9670d31f6443345cd 420 engine/res/formats/Sanctioned/Standard.txt
-962bd1a6f45a15ca7cee97c4ffccd0fdc82b5648 4300 engine/res/formats/Sanctioned/Vintage.txt
-c4a0a12ec4cac968d204f502547b80720af09306 25175010 engine/res/ia/dificil-modelo.bin
-3ffec8d58d10f99e1bd37e25d76cdfceeb58d058 5 engine/res/ia/dificil-version.txt
+4c3bdd4c54a75f1b8cf5528748aa27ee50f4a77e 1073 engine/res/formats/Sanctioned/Pioneer.txt
+f9678bf051933a19a0ce0107d6c3ca21122fe02d 425 engine/res/formats/Sanctioned/Standard.txt
+be425b4aa227e85a5c3d215dc579d87e0ecf2ab0 4315 engine/res/formats/Sanctioned/Vintage.txt
+9147a4b8d0d12d3bef94e645f869af247af83c26 25175010 engine/res/ia/dificil-modelo.bin
+4ff426c047b99f19616b5d0caaadf14793cab4a0 11 engine/res/ia/dificil-version.txt
 089a051cf9edc7ce6f407d8c5d10da7305687ea8 4578234 engine/res/ia/prediccion-mazos.bin
 589e60d7d9cec0d0b6cc0f4ef8caed980615520f 7629438 engine/res/languages/cardnames-es-ES.txt
-efeebec5cb535a787046c884ba58635025670c7b 179646 engine/res/languages/en-US.properties
-37d0a0c50c5cbf2b32aed5a194fb652476452f63 204472 engine/res/languages/es-ES.properties
+c00e61b10a42430c9e2101a815238af1e606eaac 215236 engine/res/languages/en-US.properties
+89d86f0a650b1276106a8a463bf39010d259fb14 241968 engine/res/languages/es-ES.properties
 d28968af0ee1758485ac8764c1c9f556fd09d9c2 531 engine/res/lists/NonStackingKWList.txt
-01ad7db2b25fd65485a14c5b18197370ba7ce046 7495 engine/res/lists/TypeLists.txt
+69d132037200e8fa2e37d618afb40221ffe05f23 7941 engine/res/lists/TypeLists.txt
 4909f145e67540d20bdbb094de0c74131b411705 24153 engine/res/lists/achievement-images.txt
-09d89e1f8cd3c9fca91058d53ad75e3a99d7738c 4068 engine/res/lists/altwin-achievements.txt
-30cedf0327443c2b2dc20627bff3334f2953f5b3 4711 engine/res/lists/booster-images.txt
+bbfc992c319a273c49025009c7653ca778e6b79c 4224 engine/res/lists/altwin-achievements.txt
+d0737158f4b6b931d18a6cc4ee264a2205129180 4871 engine/res/lists/booster-images.txt
 cb95ce2b3c5a7f2888ee41bd92559776827d8f64 7590 engine/res/lists/boosterbox-images.txt
 ad77828add39c6f14b2fc4ab9a58487e578bb475 198 engine/res/lists/chained-extra-turns.txt
 1b21c8b4050112c0897036fde030cda40bf4229a 232 engine/res/lists/classicModuleCardtoCrop.txt
@@ -2144,6 +2155,7 @@ a718a887227cb76df2403574172d2f519eff05dc 2058 engine/res/quest/commanderprecons/
 2ac882506c984564d9f26a0b54cf23db7accb51f 2187 engine/res/quest/commanderprecons/Faceless Menace [C19] [2019].dck
 35bc151312e45b34e3a6f1d90dc12b6b3ee99a1d 1967 engine/res/quest/commanderprecons/Fae Dominion [WOC] [2023].dck
 e031d29ca46c6a444da9fe26b51c738564c684ac 2497 engine/res/quest/commanderprecons/Family Matters [BLC] [2024].dck
+8a3ecf049b3ddbb2d9e5cd8ca60434b287089e65 2628 engine/res/quest/commanderprecons/Federation Fleet [TRC] [2026].dck
 2a80f25b94347fa262fca1711275e58c44640f0c 2126 engine/res/quest/commanderprecons/Feline Ferocity [C17] [2017].dck
 a91f39acf3ed1f069e8dc0961470b707bc11b19a 1772 engine/res/quest/commanderprecons/First Flight [SCD] [2022].dck
 983586856110ccbd6a0505a817e5f1643ebbf25f 2284 engine/res/quest/commanderprecons/Food and Fellowship [LTC] [2023].dck
@@ -2166,7 +2178,9 @@ d05cbd232a351721a39aa36698e6cb31af58435a 2041 engine/res/quest/commanderprecons/
 9865a3ffbdafb1d5279df6e50171d50c6f10d2c0 2381 engine/res/quest/commanderprecons/Jeskai Striker [TDC] [2025].dck
 ef9d9a1d4ffc2e8889e51e9d5756f3231597c373 2405 engine/res/quest/commanderprecons/Jump Scare! [DSC] [2024].dck
 f78eefecc9db6b6c3d3dc23d9df62c87dc4d8cd6 1581 engine/res/quest/commanderprecons/Keen Engineering [FDC] [2026].dck
+a271c985ff63742e9ce9279a573558dcb4831c74 2433 engine/res/quest/commanderprecons/Klingon Fury [TRC] [2026].dck
 c1e2f136ebbbadd87f53e8f47854ae66ef985e25 1872 engine/res/quest/commanderprecons/Land's Wrath [ZNC] [2020].dck
+a20697d64cd9e26d6337d0f5000e74edce0da993 2555 engine/res/quest/commanderprecons/Landing Party [TRC] [2026].dck
 6181e3accca297684419f698f16c2107cb6ea67b 2438 engine/res/quest/commanderprecons/Legends' Legacy [DMC] [2022].dck
 f2997a8a2843c87efa58305100f5e7f8032ec4e9 2591 engine/res/quest/commanderprecons/Limit Break [FIC] [2025].dck
 7d9d68caf326b46d34cfa8e83a7e090cbba76a28 2535 engine/res/quest/commanderprecons/Living Energy [DRC] [2025].dck
@@ -2256,6 +2270,7 @@ bef175e7806b9efaf3e752ddff35af9f235903df 2319 engine/res/quest/commanderprecons/
 d20a86e283dc7e9bb02a7a2b72dea4edeb029b71 1814 engine/res/quest/commanderprecons/Wade into Battle [C15] [2015].dck
 65c3db456572e721e087e3c1ead327dff06a7bfe 1914 engine/res/quest/commanderprecons/Wade into Battle [CM2] [2018].dck
 4874b6b84a3839b6ffb03c155ef400e5cc3bd6dd 2121 engine/res/quest/commanderprecons/Wakanda Forever [MSC] [2026].dck
+12a2d497630374656888f192ad6d442eeba60d15 2461 engine/res/quest/commanderprecons/We Are the Borg [TRC] [2026].dck
 1a7f7a355e469a5d555d4981e1c7c2c0ac54a713 2163 engine/res/quest/commanderprecons/Witherbloom Pestilence [SOC] [2026].dck
 5915f0b899d4ac662d07e4d3b65b84a2e3aba793 1882 engine/res/quest/commanderprecons/Witherbloom Witchcraft [C21] [2021].dck
 c6e88360e748e5179606a0307885c5980899b31c 2371 engine/res/quest/commanderprecons/World Shaper [EOC] [2025].dck
@@ -2541,6 +2556,7 @@ efab7d72e04ceea0a7448f70f945b62537518fdd 88 engine/res/tokenscripts/c_3_2_eldraz
 1f23db7b1d290b4b2403d365aef8d1938f69f91e 94 engine/res/tokenscripts/c_3_3_a_golem_flying.txt
 f311d9501bbba3f92a0a50a95ec586caa10c0bd4 96 engine/res/tokenscripts/c_3_3_a_golem_trample.txt
 734c74cfaf4adda87b92b892475f26f54a40b601 100 engine/res/tokenscripts/c_3_3_a_golem_vigilance.txt
+b4ac028df0e4af47c1cb475d4cc0d9be82e6a20d 85 engine/res/tokenscripts/c_3_3_a_illusion.txt
 a13e370e727d2b2ae69e09fe14070bdc018a402b 99 engine/res/tokenscripts/c_3_3_a_phyrexian_golem.txt
 7fb96568e32557527f287fde6dc1c5093b4480ea 120 engine/res/tokenscripts/c_3_3_a_phyrexian_wurm_deathtouch.txt
 d4cc5c3be2e2daff9a44c86a586dd07e807e9ce1 116 engine/res/tokenscripts/c_3_3_a_phyrexian_wurm_lifelink.txt
@@ -2548,6 +2564,7 @@ d4cc5c3be2e2daff9a44c86a586dd07e807e9ce1 116 engine/res/tokenscripts/c_3_3_a_phy
 4b61bbb34e2244b8be053f5b7d8e8dc5237ffef3 81 engine/res/tokenscripts/c_3_3_a_zombie.txt
 90c97fc155344e89c550d19a9e2962a2958e620b 91 engine/res/tokenscripts/c_3_3_e_a_golem.txt
 ece20abc2493a51b2720490b23bfb19e84193411 100 engine/res/tokenscripts/c_3_4_a_gargoyle_flying.txt
+b7f2573f006b2c9726608c6a6685a854f1edf491 122 engine/res/tokenscripts/c_4_3_a_spacecraft_illusion_flying.txt
 3b0987f4d72c2eb2414185578ce364d0983b58b0 87 engine/res/tokenscripts/c_4_4_a_construct.txt
 37f6f8c19454b19cc6a408d53b531be07a72bb0f 117 engine/res/tokenscripts/c_4_4_a_construct_flying_haste.txt
 a3d6edde93723e8a0835225125dfae6562e6eb93 79 engine/res/tokenscripts/c_4_4_a_golem.txt
@@ -2773,12 +2790,15 @@ bbce340d8dda553bb2f18d0db44028e1edb03bed 478 engine/res/tokenscripts/meteorite.t
 d01174a976872281a00c40f13ed492c6454e0dbd 354 engine/res/tokenscripts/moloid.txt
 6f10bb4b0caf14ee6b6af5ba911ea942f8d5f9c4 84 engine/res/tokenscripts/mowu.txt
 70cefa757b2896166e1f17a926ebb182949bed64 388 engine/res/tokenscripts/munitions.txt
+a3c5f3cda63cb1ecb6c359292d936efb87e535e8 121 engine/res/tokenscripts/murf.txt
 542f1d4f47b86d1599c5d73708a0f632076abdef 238 engine/res/tokenscripts/nalaar_aetherjet.txt
+ee2ef7cc641b603e2d641d5058f40fffbb4cfe55 252 engine/res/tokenscripts/neuroflux_heirloom.txt
 daeffb0662393836454ae22d77120ded369c7730 174 engine/res/tokenscripts/new_planet.txt
 09680e5a29520bdde241a72da66b2fdfacf17b59 96 engine/res/tokenscripts/ornithopter.txt
 db7c28aa7a2620393f15e80df76127e588306a7f 86 engine/res/tokenscripts/phobos.txt
 f7060662517ceff3527705632891411faef94f29 94 engine/res/tokenscripts/plaguebearer_of_nurgle.txt
-71fd4419f9d1b1eb901fb251f52fb0022d6aa24e 112 engine/res/tokenscripts/primo_the_indivisible.txt
+e4e43411a34dc169e68a8c5acc9b87bedb5a0feb 87 engine/res/tokenscripts/porthos.txt
+a8db312fc01dd7c690369e4c238bbfd9f48fc483 111 engine/res/tokenscripts/primo_the_indivisible.txt
 a4d491be566931f60554373e7eee48f4a1b4e5ed 94 engine/res/tokenscripts/r_0_0_a_gremlin.txt
 449bab62d499a033a4947330526d47f5dcf34b3d 1046 engine/res/tokenscripts/r_0_1_elemental_rekindling_phoenix.txt
 7a53d82e7fd00f33055c966ef16668f2745fa7fa 607 engine/res/tokenscripts/r_0_2_dragon_egg_defender_hatches_dragon.txt
@@ -2886,6 +2906,7 @@ ee02405c122a3d3d4662d6257a8182e3805a79b3 181 engine/res/tokenscripts/replicated_
 f9484ff7d78b18edeb1eb69aadb6c4f85b152ea4 250 engine/res/tokenscripts/rg_1_1_dragon_flying_devour.txt
 729ef518ddb854d950c35818bef23a4eddc1a5e8 105 engine/res/tokenscripts/rg_1_1_goblin_warrior.txt
 eaa8b653b3594fff7a13bf4e1af5083b25933027 100 engine/res/tokenscripts/rg_2_2_satyr_haste.txt
+86d37e66166215ece4b2ad5d48c9542fb399855a 192 engine/res/tokenscripts/rg_2_2_worm_noblock.txt
 5b6ccb84c0840385377e3e9ff4d9b17307c13b05 104 engine/res/tokenscripts/rg_4_4_beast_trample.txt
 889f6a822ebbc3fff126c90b3b0dac562b2011cb 116 engine/res/tokenscripts/rg_4_4_giant_warrior_haste.txt
 b923b58fc0cd134ff968af27c9b94b502f7268f5 341 engine/res/tokenscripts/rg_5_4_dragon_spirit_damagesac.txt
@@ -3096,6 +3117,7 @@ c0dc8d31ee7aa813c5a0e89bc4727d51ca6026ff 85 engine/res/tokenscripts/w_1_1_rabbit
 32c035987e7b4f91e267aa490df88015704dd706 106 engine/res/tokenscripts/w_1_1_soldier_lifelink.txt
 8f063879ddf3d197c617dbd634bc72f3c7f7e99b 85 engine/res/tokenscripts/w_1_1_spirit.txt
 c38f1517c0f985106272aa45c442d4dd89460621 100 engine/res/tokenscripts/w_1_1_spirit_flying.txt
+d0cd16b3b2784e50f1ca83a1f7a1457b41dfbd89 194 engine/res/tokenscripts/w_1_1_tribble_noblock.txt
 86562fd01563a7c68dab4bb051eea082e9de7abf 106 engine/res/tokenscripts/w_1_1_vampire_lifelink.txt
 d89636e004fd5d9ca2685ba75f9e76f7fa593991 87 engine/res/tokenscripts/w_1_1_warrior.txt
 dde5e86abfbd2920044bb19dbd9cf56deee2434d 108 engine/res/tokenscripts/w_1_1_warrior_vigilance.txt
@@ -3183,4 +3205,4 @@ c194b73e76090177bc57adf826c68996635d1873 111 engine/res/tokenscripts/wu_2_2_knig
 8e32acef8424174b3b2a10ed35b267481390f2a1 315 engine/res/tokenscripts/yellow_hat.txt
 5e6f12e1de81b14500de46e4410596e88485c9c3 512 engine/res/tokenscripts/zabu.txt
 70134148a29b5da1263c0a8a820b80926ce4011f 101 engine/res/tokenscripts/zeppelin.txt
-2fbcc59fc67c0c04591241511cde487d7a82773b 27880344 motor.jar
+261f02998d8c0a116bc0478b4a8810e7a4025bc8 27839642 motor.jar
